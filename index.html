@@ -1,17 +1,17 @@
 <!doctype html>
 <html>
 <head>
-    <title>Ejemplo 02 VBO</title>
+    <title>Ejercicio 3 Triangulos</title>
     <style>
-        body{ 
-            background-color: grey; 
-            font-family:Arial, Helvetica, sans-serif;                
+        body{
+            background-color: grey;
+            font-family:Arial, Helvetica, sans-serif;
         }
-        canvas{ 
-            background-color: white; 
+        canvas{
+            background-color: white;
         }
-        textarea{ 
-            background-color: black; 
+        textarea{
+            background-color: black;
             background-color: white;
         }
         #titulo{
@@ -21,15 +21,15 @@
 </head>
 
 <body>
-    <div id="titulo">		
+    <div id="titulo">
 
         <h1>Sistemas Gráficos</h1>
-        
+
         <h2>Ejercicio Práctico</h2>
 
         <canvas id="my-canvas" width="900" height="500">
             Your browser does not support the HTML5 canvas element.
-        </canvas>			
+        </canvas>
 
     </div>
 
@@ -47,7 +47,7 @@
         }
     </script>
 
-    <!-- ************       fragment shader       **************** !-->        
+    <!-- ************       fragment shader       **************** !-->
 
     <script id="shader-fs" type="x-shader/x-fragment">
         varying highp vec4 vColor;
@@ -63,17 +63,17 @@
             glProgram = null,
             fragmentShader = null,
             vertexShader = null;
-            
+
         var vertexPositionAttribute = null,
             trianglesVerticeBuffer = null,
             vertexColorAttribute = null,
             trianglesColorBuffer = null;
-            
+
         function initWebGL(){
 
-            canvas = document.getElementById("my-canvas");  
+            canvas = document.getElementById("my-canvas");
             try{
-                gl = canvas.getContext("webgl");                    
+                gl = canvas.getContext("webgl");
             } catch(e) {
                 alert("Error al obtener el contexto");
             }
@@ -83,37 +83,37 @@
                 setupWebGL();
                 initShaders();
                 setupBuffers();
-                drawScene();    
-                
-            }else{    
+                drawScene();
+
+            }else{
                 alert("Error: Su browser no soporta WebGL.");
-            }   
+            }
 
         }
-        
+
         function setupWebGL(){
 
             //set the clear color
-            gl.clearColor(0.1, 0.1, 0.9, 1.0);     
-            gl.clear(gl.COLOR_BUFFER_BIT);     
-            
+            gl.clearColor(0.1, 0.1, 0.9, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
             gl.viewport(0, 0, canvas.width, canvas.height);
 
         }
-        
+
         function initShaders(){
 
             //get shader source
             var fs_source = document.getElementById('shader-fs').innerHTML,
                 vs_source = document.getElementById('shader-vs').innerHTML;
 
-            //compile shaders    
+            //compile shaders
             vertexShader = makeShader(vs_source, gl.VERTEX_SHADER);
             fragmentShader = makeShader(fs_source, gl.FRAGMENT_SHADER);
-            
+
             //create program
             glProgram = gl.createProgram();
-            
+
             //attach and link shaders to the program
             gl.attachShader(glProgram, vertexShader);
             gl.attachShader(glProgram, fragmentShader);
@@ -122,12 +122,12 @@
             if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
                 alert("Unable to initialize the shader program.");
             }
-            
+
             //use program
             gl.useProgram(glProgram);
-            
+
         }
-        
+
         function makeShader(src, type){
 
             //compile the vertex shader
@@ -140,7 +140,7 @@
             }
             return shader;
         }
-        
+
         function setupBuffers(){
 
             var data = [
@@ -193,16 +193,16 @@
                 -0.25, -0.5, 0.0,   // vértice 2, triangulo 12
                   0.1, 0.0, 0.0   // vértice 3, triangulo 12
             ];
-            
+
             trianglesVerticeBuffer = gl.createBuffer();                               // creo el buffer
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesVerticeBuffer);                   // activo el buffer
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);   // cargo los datos en el buffer 
-        
-            var color = [   
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);   // cargo los datos en el buffer
+
+            var color = [
                 1.0, 0.75, 0.15,      // r,g,b vertice 1
                 1.0, 0.75, 0.15,
                 1.0, 0.75, 0.15,
-                
+
                 1.0, 0.75, 0.15,      // r,g,b vertice 2
                 1.0, 0.75, 0.15,
                 1.0, 0.75, 0.15,
@@ -243,7 +243,7 @@
                 1.0, 1.0, 1.0,
                 1.0, 1.0, 1.0,
 
- 
+
                 1.0, 1.0, 1.0,      // r,g,b vertice 12
                 1.0, 1.0, 1.0,
                 1.0, 1.0, 1.0
@@ -252,12 +252,12 @@
 
 
             ];
-            
+
             trianglesColorBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, trianglesColorBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);    
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
         }
-        
+
         function drawScene(){
 
             vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
@@ -275,6 +275,6 @@
 
         window.onload=initWebGL;
 
-    </script>        
+    </script>
 </body>
 </html>
