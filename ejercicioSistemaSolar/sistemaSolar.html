@@ -425,7 +425,7 @@
 
 
             // luna
-            mat4.rotate(m1, m1, anguloDiario/2, [0,1,0]);
+            mat4.rotate(m1, m1, anguloDiario/20, [0,1,0]);
 
             mLuna=mat4.create();      
             // Se traslada
@@ -438,15 +438,25 @@
             //5) La nave Apolo debe estar ubicada sobre la cara oculta de la luna
             // apollo
             mApollo=mat4.create();
-            mat4.translate(mApollo,mLuna,[4,0,0]); 
-            mat4.rotate(mApollo,mLuna, Math.PI/180, [1,0,0]);
-            mat4.translate(mApollo,mLuna,[-4,0,0]); 
+            mat4.rotate(mApollo,mApollo, -Math.PI/4, [0,0,1]);
+            mat4.translate(mApollo,mLuna,[-1.5,1.5,0]); 
+            mat4.rotate(mApollo,mApollo, Math.PI/4, [0,0,1]);
             setTransform(apollo,mApollo);    
 
             //6) La ISS debe orbital alrededor de la tierra pasando por encima y por debajo de la misma
+            var m2=mat4.create();
+            //Gira alrededor del sol
+            mat4.rotate(m2,m2,anguloAnual,[0,1,0]);
+            mat4.translate(m2,m2,[60,0,0]);  
+            mat4.rotate(m2,m2,-anguloAnual,[0,1,0]);
+            mat4.rotate(m2,m2, anguloDiario/20, [1,0,1]);
+
             mEstacion=mat4.create();
-            mat4.rotate(mEstacion,mTierra,Math.PI/2,[0,0,1]);
-            mat4.translate(mEstacion,mTierra,[20,20,20]);           
+            mat4.translate(mEstacion,mEstacion,[1,0,1]);//Sigue el sol
+            mat4.rotate(mEstacion, m2, Math.PI, [0,0,1]);//Sigue M1
+            mat4.translate(mEstacion,mEstacion,[10,10,10]);//Sigue el sol
+            //mat4.rotate(mEstacion,mEstacion, Math.PI, [0, 0, 0]);                       
+            //mat4.rotate(mEstacion,mEstacion, -Math.PI, [0, 0, 5]);
             setTransform(iss,mEstacion);  
 
 
