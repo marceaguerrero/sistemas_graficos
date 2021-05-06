@@ -37,12 +37,12 @@
             vec3 normal = aNormal;	
             vec2 uv = aUv;
                                    	
-           vec4 textureColor = texture2D(uSampler, vec2(uv.s, uv.t));         
+            vec4 textureColor = texture2D(uSampler, vec2(uv.s, uv.t));         
             
             // **************** EDITAR A PARTIR DE AQUI *******************************
-            // se mambea
             //position+=normal*(1.0+sin(uv.x*18.0*PI+time*20.0))*0.03; 
-            position=vec3(uv.x,uv.y,0.0);
+            //position=vec3(uv.x, uv.y*0.03, sin(uv.y)*time); 
+            position=(uv.x*0.03, uv.y*0.03, normal*(1.0+sin(uv.y*8.0*PI+time*15.0))*0.5); 
             // ************************************************************************
 
             vec4 worldPos = uMMatrix*vec4(position, 1.0);                        
