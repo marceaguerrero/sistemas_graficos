@@ -37,11 +37,17 @@
             vec3 normal = aNormal;	
             vec2 uv = aUv;
                                    	
-           vec4 textureColor = texture2D(uSampler, vec2(uv.s, uv.t));         
+            vec4 textureColor = texture2D(uSampler, vec2(uv.s, uv.t));         
             
             // **************** EDITAR A PARTIR DE AQUI *******************************
-            // un mundo en movimiento
-            position+=normal*(1.0+sin(uv.x*18.0*PI+time*20.0))*0.03; 
+            //plano
+            //position=vec3(2.0*(uv.x - 0.5), 0.0, 2.0*(uv.y - 0.5)); 
+            //mundo
+            //position+=normal*(1.0+sin(uv.x*18.0*PI+time*20.0))*0.03; 
+
+
+            float centro = 0.5;
+            position=vec3(sin(uv.x*PI*2.), uv.y-centro, cos(uv.x*PI*2.));
             // ************************************************************************
 
             vec4 worldPos = uMMatrix*vec4(position, 1.0);                        
