@@ -1,0 +1,540 @@
+<!doctype html>
+<head>
+    <script src="js/jquery.js"></script>
+    <script src="js/gl-matrix-3.3.0.js"></script>
+    <script src="js/webgl-utils.js"></script>
+    <script src="js/dat.gui.js"></script>
+    <script src="modulo-geometria.js"></script>
+    <style>
+        html{
+            height: 100%;
+        }
+        body{
+            padding: 0;
+            margin: 0;
+            height: 100%;;
+        }
+
+        #myCanvas{
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" >
+        Your browser does not support the HTML5 canvas element.
+    </canvas>
+
+
+    <script>
+
+        var vertexShaderFile="vertex-shader.glsl";
+        var modo="edges"; // wireframe, smooth, edges
+        var shaderProgram;
+        var time=0;
+
+        var gl;
+        var mat4=glMatrix.mat4;
+        var mat3=glMatrix.mat3;
+        var vec3=glMatrix.vec3;
+        var vec4=glMatrix.vec4;
+
+        var grua_A1;
+        var grua_A2;
+        var grua_A3;
+        var grua_A4;
+        var grua_B1;
+        var grua_B2;
+        var grua_B3;
+        var grua_B4;
+        var grua_C1;
+        var grua_C2;
+        var grua_C3;
+        var grua_C4;
+
+        var matrizProyeccion = mat4.create();
+        var matrizVista = mat4.create();
+
+        var $canvas=$("#myCanvas");
+        var aspect=$canvas.width()/$canvas.height();
+
+        var distanciaCamara=5.00;
+        var alturaCamara=-1.6;
+        var velocidadAngular=0.15;
+        var lighting="true";
+
+        var vertexShaderSource;
+        var fragmentShaderSource;
+
+
+        function initGL(canvas) {
+
+            try {
+                gl = canvas.getContext("webgl");
+                gl.canvas.width=$canvas.width();
+                gl.canvas.height=$canvas.height();
+            } catch (e) {
+                console.error(e);
+            }
+            if (!gl) {
+                alert("Could not initialise WebGL, sorry :-(");
+            }
+        }
+
+        function loadShaders(){
+
+            $.when(loadVS(), loadFS()).done(function(res1,res2){
+                //this code is executed when all ajax calls are done
+                webGLStart();
+            });
+
+            function loadVS() {
+                return  $.ajax({
+                    url: "shaders/"+vertexShaderFile,
+                    success: function(result){
+                        vertexShaderSource=result;
+                    }
+                });
+            }
+
+            function loadFS() {
+                return  $.ajax({
+                    url: "shaders/fragment-shader.glsl",
+                    success: function(result){
+                        fragmentShaderSource=result;
+                    }
+                });
+            }
+        }
+
+        function getShader(gl,code,type) {
+
+            var shader;
+
+            if (type == "fragment")
+                shader = gl.createShader(gl.FRAGMENT_SHADER);
+            else // "vertex"
+                shader = gl.createShader(gl.VERTEX_SHADER);
+
+            gl.shaderSource(shader, code);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        }
+
+        function onResize(){
+            gl.canvas.width=$canvas.width();
+            gl.canvas.height=$canvas.height();
+            aspect=$canvas.width()/$canvas.height();
+        }
+
+        function getShaderSource(url) {
+            var req = new XMLHttpRequest();
+            req.open("GET", url, false);
+            req.send(null);
+            return (req.status == 200) ? req.responseText : null;
+        };
+
+        function initShaders() {
+
+            var fragmentShader= getShader(gl, vertexShaderSource,"vertex");
+            var vertexShader= getShader(gl, fragmentShaderSource,"fragment");
+
+            shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                alert("Could not initialise shaders");
+            }
+
+            gl.useProgram(shaderProgram);
+
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aUv");
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+            shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aNormal");
+            gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+            shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, "uMMatrix");
+            shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "uVMatrix");
+            shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
+            shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+            shaderProgram.useLightingUniform = gl.getUniformLocation(shaderProgram, "uUseLighting");
+            shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
+            shaderProgram.frameUniform = gl.getUniformLocation(shaderProgram, "time");
+            shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightPosition");
+            shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
+        }
+
+        function Objeto3D(ancho, largo){
+            this.matrizModelado=mat4.create();
+            mat4.identity(this.matrizModelado);
+            this.normalMatrix = mat3.create();
+            this.posicion=vec3.create();
+            this.rotacion=vec3.create();
+            this.escala=vec3.create();
+            this.hijos=[];
+
+            this.webgl_position_buffer = null;
+            this.webgl_normal_buffer = null;
+            this.webgl_texture_coord_buffer = null;
+            this.webgl_index_buffer = null;
+
+            this.agregarHijo=function(h) {this.hijos.push(h)}
+            //this.quitarHijo=function(h) { … }
+            this.setPosicion=function(x,y,z) { 
+                this.posicion = [x,y,z];
+                //matriz=mat4.create();
+                mat4.translate(this.matrizModelado, this.matrizModelado, this.posicion);
+                //this.matrizModelado = matriz;
+                }
+
+            this.setRotacion=function(angulo, x,y,z) {
+                this.rotacion = [x,y,z];
+                //matriz=mat4.create();
+                mat4.rotate(this.matrizModelado, this.matrizModelado, angulo, this.rotacion);
+                //this.matrizModelado = matriz;
+                }
+
+            this.setEscala=function(x,y,z) { 
+                this.escala = [x,y,z];
+                //matriz=mat4.create();
+                mat4.scale(this.matrizModelado, this.matrizModelado, this.escala);
+                //this.matrizModelado = matriz;
+                }
+
+            //agrego esto pero no lo uso, hasta deberia evaluar si va
+            this.getPosicion=function(u,v){
+                var x=(u-0.5)*ancho;
+                var z=(v-0.5)*largo;
+                return [x,z,0];
+            }
+            //agrego esto pero no lo uso, hasta deberia evaluar si va
+            this.getNormal=function(u,v){
+                return [0,1,0];
+            }
+            //agrego esto pero no lo uso, hasta deberia evaluar si va
+            this.getCoordenadasTextura=function(i,j, filas, columnas){
+                return [1.0/filas * i,1.0/columnas * j];
+            }
+
+            this.setMatrixUniforms=function() {
+                gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, this.matrizModelado);
+                gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, matrizVista);
+                gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, matrizProyeccion);
+
+                mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
+
+                mat3.invert(this.normalMatrix, this.normalMatrix);
+                mat3.transpose(this.normalMatrix, this.normalMatrix);
+
+                gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, this.normalMatrix);
+                }
+            
+            this.initBuffers = function(filas,columnas, tipo){
+    
+                positionBuffer = [];
+                normalBuffer = [];
+                uvBuffer = [];
+                var matIdentidad = [];
+                var mat = mat3.create();
+                mat3.identity(mat);
+                matIdentidad.push(mat);
+
+                if (tipo == 'cuadrado')
+                    {vertices = crearCuadrado();}
+                if (tipo == 'circulo')
+                    {vertices = crearCirculo();}
+
+                //uso dos niveles
+                for (j=0; j<filas; j++){
+                    y = j*1.0;
+                    if (tipo == 'cuadrado')
+                        {matrizNivel = crearRecorridoCuadrado(0.0, y, 0.0);}
+                    if (tipo == 'circulo')
+                        {matrizNivel = crearRecorridoCirculo(0.0, y, 0.0);}
+                    translado = vec3.create();
+                    translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
+                    //guardo en el position buffer los vertices
+                    for (i=0; i< vertices.length; i++){
+                        var pos = vec3.create();
+                        vec3.copy(pos,vertices[i]);
+                        vec3.add(pos,translado, pos);
+                        positionBuffer.push(pos[0]);
+                        positionBuffer.push(pos[1]);
+                        positionBuffer.push(pos[2]);
+
+                        var u=j/columnas;
+                        var v=i/filas;
+                        var nrm=this.getNormal(u,v);
+                        normalBuffer.push(nrm[0]);
+                        normalBuffer.push(nrm[1]);
+                        normalBuffer.push(nrm[2]);
+                        var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
+                        uvBuffer.push(uvs[0]);
+                        uvBuffer.push(0.2);
+                        uvBuffer.push(uvs[1]);
+                        var u = (i / (filas - 1));
+                        var v = (j / (columnas - 1));
+                        uvBuffer.push(v);
+                        uvBuffer.push(u);
+                    }
+                }
+                console.log(positionBuffer);
+
+                // Buffer de indices de los triangulos
+                indexBuffer=[];
+                for (var i=0;i<filas-1;i++){
+                        indexBuffer.push(i*columnas);
+                        for (var j=0;j<columnas-1;j++){
+                            indexBuffer.push(i*columnas+j);
+                            indexBuffer.push((i+1)*columnas+j);
+                            indexBuffer.push(i*columnas+j+1);
+                            indexBuffer.push((i+1)*columnas+j+1);
+                        }
+                        indexBuffer.push((i+1)*columnas+columnas-1);
+                }
+                console.log(indexBuffer);
+
+            // Creación e Inicialización de los buffers a nivel de OpenGL
+                this.webgl_normal_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalBuffer), gl.STATIC_DRAW);
+                this.webgl_normal_buffer.itemSize = 3;
+                this.webgl_normal_buffer.numItems = normalBuffer.length / 3;
+
+                this.webgl_texture_coord_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvBuffer), gl.STATIC_DRAW);
+                this.webgl_texture_coord_buffer.itemSize = 2;
+                this.webgl_texture_coord_buffer.numItems = uvBuffer.length / 2;
+
+                this.webgl_position_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionBuffer), gl.STATIC_DRAW);
+                this.webgl_position_buffer.itemSize = 3;
+                this.webgl_position_buffer.numItems = positionBuffer.length / 3;
+
+                this.webgl_index_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexBuffer), gl.STATIC_DRAW);
+                this.webgl_index_buffer.itemSize = 1;
+                this.webgl_index_buffer.numItems = indexBuffer.length;
+            }
+
+            this.actualizarMatrizModelado = function(){
+                    
+                    mat4.translate(this.matrizModelado, this.matrizModelado, this.posicion);
+                    mat4.rotate(this.matrizModelado, this.matrizModelado, Math.PI/4, this.rotacion);
+                    mat4.scale(this.matrizModelado, this.matrizModelado, this.escala);
+            }
+
+            this.draw = function(matPadre){
+                    //this.actualizarMatrizModelado();
+                    // concatenamos las transformaciones padre/hijo
+                    if(matPadre){
+                        var m=mat4.create();
+                        mat4.multiply(m,matPadre,this.matrizModelado);
+                        //no se si tengo que actualizar la matriz de modelado del hijo con m
+                        }
+                    
+                    //console.log(m,matPadre,this.matrizModelado);
+
+                    if (this.webgl_position_buffer && this.webgl_index_buffer){
+                    // dibujamos la malla de triángulos con WebGL
+                    // si el objeto tiene geometría asociada
+                        this.setMatrixUniforms();
+
+                        // Se configuran los buffers que alimentaron el pipeline
+                        gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
+                        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+                        gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
+                        gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+                        gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
+                        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
+
+                        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
+
+                        if (modo!="wireframe"){
+                            gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
+                            gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
+                        }
+
+                        if (modo!="smooth") {
+                            gl.uniform1i(shaderProgram.useLightingUniform,false);
+                            gl.drawElements(gl.LINE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
+                        }
+                    }
+                    for (var i=0;i<this.hijos.length;i++){
+                        //le mando la matriz de modelado del padre
+                        this.hijos[i].draw(this.matrizModelado);}
+            }
+
+        }
+
+        function drawScene() {
+
+            // Se configura el viewport dentro del "canvas".
+            // En este caso se utiliza toda el área disponible
+            gl.viewport(0, 0, $canvas.width(), $canvas.height());
+
+            // Se habilita el color de borrado para la pantalla (Color Buffer) y otros buffers
+            gl.clearColor(0.0,0.0,0.0,1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            // Se configura la matriz de proyección
+            mat4.identity(matrizProyeccion);
+            mat4.perspective(matrizProyeccion, 30, aspect, 0.1, 100.0);
+            mat4.scale(matrizProyeccion,matrizProyeccion,[1,-1,1]); // parche para hacer un flip de Y, parece haber un bug en glmatrix
+
+            // Se inicializan las variables asociadas con la Iluminación
+
+            gl.uniform1f(shaderProgram.frameUniform, time/10.0 );
+            gl.uniform3f(shaderProgram.ambientColorUniform, 0.6, 0.6, 0.6 );
+            //gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
+            gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
+
+            // Definimos la ubicación de la camara
+
+            mat4.lookAt(matrizVista,
+                vec3.fromValues(0,alturaCamara,distanciaCamara),
+                vec3.fromValues(0,0,0),
+                vec3.fromValues(0,1,0)
+            );
+
+            var lightPosition = [10.0,0.0, 3.0];
+            gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
+
+            dibujarGeometria();
+        }
+
+        function dibujarGeometria(){
+            grua_B1.draw();
+        }
+        function tick() {
+            requestAnimFrame(tick);
+            time+=1/60;
+
+            // acumulo rotaciones en matrizModelado
+            //mat4.rotate(matrizModelado, matrizModelado,0.03*velocidadAngular, [0, 1, 0]);
+
+            drawScene();
+        }
+
+        function initMenu(){
+            var gui = new dat.GUI();
+            gui.add(window, "distanciaCamara",0.01,5).step(0.01);
+            gui.add(window, "alturaCamara",-2,2).step(0.01);;
+            gui.add(window, "modo",["wireframe","smooth","edges"]);
+            gui.add(window, "velocidadAngular",0, 1).step(0.01);
+
+
+        }
+
+        function crearGeometria(){
+            // GRUA
+                        // pieza A
+            //ancho, largo
+            grua_A1 = new Objeto3D(1,1);
+            //se genera la malla de filas x columnas;
+            grua_A1.initBuffers(3, 2,'cuadrado');
+
+            grua_A2 = new Objeto3D(1,1);
+            grua_A2.initBuffers(3, 2,'cuadrado');        
+            grua_A2.setRotacion(Math.PI/2.0, 0.,1.,0.);
+
+            grua_A3 = new Objeto3D(1,1);
+            grua_A3.initBuffers(3, 2,'cuadrado');
+            grua_A3.setPosicion(0.,0.,-1.);
+
+            grua_A4 = new Objeto3D(1,1);
+            grua_A4.initBuffers(3, 2,'cuadrado');
+            grua_A4.setRotacion(-Math.PI/2.0, 0.,1.,0.);
+            grua_A4.setPosicion(-1.0,0.,-1.0);
+            
+            grua_A1.agregarHijo(grua_A2);
+            grua_A1.agregarHijo(grua_A3);
+            grua_A1.agregarHijo(grua_A4);
+
+            // pieza B
+            grua_B1 = new Objeto3D(1,1);
+            grua_B1.initBuffers(3, 2,'cuadrado');
+            grua_B1.setEscala(-0.5,-0.5,-0.5);
+
+            grua_B2 = new Objeto3D(1,1);
+            grua_B2.initBuffers(3, 2,'cuadrado');        
+            grua_B2.setRotacion(Math.PI/2.0, 0.,1.,0.);
+            grua_B2.setEscala(-0.5,-0.5,-0.5);
+
+            grua_B3 = new Objeto3D(1,1);
+            grua_B3.initBuffers(3, 2,'cuadrado');
+            grua_B3.setPosicion(0.,0.,0.5);
+            grua_B3.setEscala(-0.5,-0.5,-0.5);
+
+            grua_B4 = new Objeto3D(1,1);
+            grua_B4.initBuffers(3, 2,'cuadrado');
+            grua_B4.setRotacion(-Math.PI/2.0, 0.,1.,0.);
+            grua_B4.setPosicion(0.5,0.,0.5);
+            grua_B4.setEscala(-0.5,-0.5,-0.5);
+
+            grua_B1.agregarHijo(grua_B2);
+            grua_B1.agregarHijo(grua_B3);
+            grua_B1.agregarHijo(grua_B4);
+
+            //lo relaciono con la posición A
+            grua_B1.agregarHijo(grua_A1);
+            grua_A1.setPosicion(-0.8,-2.9,0.55);
+            grua_A2.setPosicion(-0.55,-2.9,0.22);
+            grua_A3.setPosicion(-0.8,-2.9,0.55);
+            grua_A4.setPosicion(0.55,-2.9,1.8);
+
+
+            // pieza C es un circulo honey
+            grua_C1 = new Objeto3D(3,3);
+            grua_C1.initBuffers(12, 12,'circulo');
+
+            //lo relaciono con la posición B
+            //grua_C1.agregarHijo(grua_B1);
+        }
+
+        function webGLStart() {
+            var canvas = document.getElementById("myCanvas");
+            initGL(canvas);
+            initShaders();
+
+            crearGeometria();
+
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.enable(gl.DEPTH_TEST);
+
+            $(window).on("resize",onResize);
+            initMenu();
+            tick();
+        }
+
+        // cuando el documento HTML esta completo, iniciamos la aplicación
+        $(document).ready(function(){
+            loadShaders();
+        })
+
+    </script>
+
+</body>
+</html>
