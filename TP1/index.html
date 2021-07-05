@@ -6,6 +6,7 @@
     <script src="js/dat.gui.js"></script>
     <script src="js/droneCamera.js"></script>
     <script src="modulo-geometria.js"></script>
+    <script src="modulo-calculos.js"></script>
     <style>
         html{
             height: 100%;
@@ -54,18 +55,19 @@
         var grua_B3;
         var grua_B4;
         var grua_C1;
+        var grua_D0;
         var grua_D1;
         var grua_D2;
         var grua_D3;
         var grua_D4;
         var grua_E1;
         var grua_E2;
+        var grua_F0;
         var grua_F1;
+        var grua_F1a;
         var grua_F2;
         var grua_F3;
         var grua_G1;
-        var valorGrua = 0.7;
-        var rotoGruaAnt = 90.;
 
         var matrizProyeccion = mat4.create();
         var matrizVista = mat4.create();
@@ -76,12 +78,17 @@
         var distanciaCamara=5.00;
         var alturaCamara=-1.6;
         var alturaGrua=0.7;
-        var lighting="true";
-        var rotarCabina=90.;
+        var valorGrua = 0.7;
+        var rotarCabina=0.;
+        var rotoGruaAnt = 0.;
+        var alturaCable=0.1;
+        var valorCable = 0.1;
 
+        var lighting="true";
         var vertexShaderSource;
         var fragmentShaderSource;
 
+        var drone = new DroneCameraControl();
 
         function initGL(canvas) {
 
@@ -430,8 +437,7 @@
                     this.actualizarMatrizModelado();
                     // concatenamos las transformaciones padre/hijo
                     if(matPadre){
-                        var m=mat4.create();
-                        mat4.multiply(m,matPadre,this.matrizModelado);
+                        mat4.multiply(this.matrizModelado,matPadre,this.matrizModelado);
                         }
 
                     if (this.webgl_position_buffer && this.webgl_index_buffer){
@@ -490,6 +496,7 @@
             //gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
             gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
+            drone.getMatrix();
             // Definimos la ubicación de la camara
             mat4.lookAt(matrizVista,
                 vec3.fromValues(0,alturaCamara,distanciaCamara),
@@ -512,25 +519,33 @@
 
             if (rotoGruaAnt!=rotarCabina)
             {
-                rotacionCabina(rotarCabina);
                 rotoGruaAnt = rotarCabina;
+                rotarCabina = rotarCabina*Math.PI/4;
+                rotacionCabina(rotarCabina);
             }
+
+            if (alturaCable!=valorCable)
+                {
+                    if (alturaCable - valorCable <0)
+                        expandirCable(alturaCable);
+                    else
+                        expandirCable(valorCable);
+                    valorCable = alturaCable;
+                }
 
             dibujarGeometria();
 
         }
 
         function dibujarGeometria(){
-            grua_D1.draw();
+            grua_A1.draw();
         }
 
         function tick() {
             requestAnimFrame(tick);
             time+=1/60;
 
-            // acumulo rotaciones en matrizModelado
-            //mat4.rotate(matrizModelado, matrizModelado,0.03*velocidadAngular, [0, 1, 0]);
-
+            drone.update();
             drawScene();
         }
 
@@ -539,55 +554,42 @@
             gui.add(window, "distanciaCamara",0.01,5).step(0.01);
             gui.add(window, "alturaCamara",-2,2).step(0.01);
             gui.add(window, "modo",["wireframe","smooth","edges"]);
-            gui.add(window, "alturaGrua",-0.5,0.7).step(0.01);
-            gui.add(window, "rotarCabina",0.,360.).step(0.01);
+            gui.add(window, "alturaGrua",-1.,0.7).step(0.01);
+            gui.add(window, "rotarCabina",0.,8.).step(0.01);
+            gui.add(window, "alturaCable",0.1,0.35).step(0.01);
 
 
         }
 
         function expandirGrua(altura)
         {
-            if (altura < 0.25 && altura > -0.50){
-                grua_B1.setPosicion(0.,altura+0.45,0.);
-                grua_B2.setPosicion(0.,altura+0.45,0.);
-                grua_B3.setPosicion(0.,altura+0.45,0.5);
-                grua_B4.setPosicion(-0.5,altura+0.45,0.5);
-            }
-            grua_C1.setPosicion(-0.25,altura-1.7,0.2);
-            grua_D1.setPosicion(0.2,altura+0.45,0.);
-            grua_D2.setPosicion(0.2,altura+0.45,0.5);
-            grua_D3.setPosicion(0.2,altura+0.45,0.5);
-            grua_D4.setPosicion(-0.6,altura+0.45,0.5);
-            //grua_E1.setPosicion(altura,0.,0.);
-            //grua_E2.setPosicion(altura,0.,0.);
-            //grua_F1.setPosicion(0.,altura,0.);
+            if (altura < 0.08)
+                grua_B1.setPosicion(0.75,altura + 3.,-0.25);
 
-            //grua_F2.setRotacion(0.,0.,Math.PI/4);
-            //grua_F2.setPosicion(0.,altura,0.);
-            //grua_F2.setRotacion(0.,0.,-Math.PI/4);
-
-            //grua_F3.setRotacion(0.,0.,-Math.PI/4);
-            //grua_F3.setPosicion(0.,altura,0.);
-            //grua_F3.setRotacion(0.,0.,Math.PI/4);
-
-            //grua_G1.setPosicion(0.,0.,altura/2);
+            grua_C1.setPosicion(0.5,altura+0.8,-0.5);
+            grua_D0.setPosicion(0.12,altura + 3.,-0.65);
+            grua_E1.setPosicion(0.5,altura + 3.,-0.45);
+            grua_E2.setPosicion(0.5,altura + 3.,-0.45);
+            grua_F1.setPosicion(4.5,altura +3.1,-0.45);
+            grua_F0.setPosicion(4.5,altura +3.1,1.15);
         }
 
+        function expandirCable(altura)
+        {
+            //tengo que escalar el cable para que sea mas largo
+            grua_F1.setEscala(0.,-altura,0.);
+            //F2, F3 y G1 se mueven
+            //z es el alto, y profundidad, x es x esta cambiado porque depende de F0
+            posicion_z = Math.pow( altura * 10., 2.) ;
+            grua_F2.setPosicion(0.25,16.5,posicion_z -2. + Math.pow( 2., 2.) ); 
+            grua_F3.setPosicion(0.25,16.5,posicion_z -2. + Math.pow( 2., 2.)); 
+            grua_G1.setPosicion(-2., 8.,posicion_z -1. + Math.pow( 2.5, 2.));  
+
+        }
+        
         function rotacionCabina(alpha)
         {
-            //grua_D2.setPosicion(alpha/100,0.,0.);
-            grua_D2.setRotacion(0.,0.,alpha);
-            //grua_D2.setRotacion(alpha,0.,1.,0.);
-            //grua_D3.setRotacion(alpha,0.,1.,0.);
-            //grua_D4.setRotacion(alpha,0.,1.,0.);
-            //grua_E1.setRotacion(alpha,0.,0.,1.);
-            //grua_E2.setRotacion(alpha,0.,0.,1.);
-            //grua_F1.setRotacion(alpha,0.,0.,1.);
-            //grua_F2.setRotacion(alpha,0.,0.,1.);
-            //grua_F2.setRotacion(alpha,0.,0.,1.);
-            //grua_F3.setRotacion(alpha,0.,0.,1.);
-            //grua_F3.setRotacion(alpha,0.,0.,1.);
-            //grua_G1.setRotacion(alpha,0.,0.,1.);
+            grua_D0.setRotacion(alpha, Math.PI/2,0.);
         }
 
         function crearGeometria(){
@@ -596,97 +598,140 @@
             //ancho, largo
             grua_A1 = new Objeto3D(1,1);
             grua_A1.initBuffers(3, 2,'cuadrado');
-
             grua_A2 = new Objeto3D(1,1);
             grua_A2.initBuffers(3, 2,'cuadrado');        
-            grua_A2.setRotacion(0.,0.,Math.PI/2);
-
             grua_A3 = new Objeto3D(1,1);
             grua_A3.initBuffers(3, 2,'cuadrado');
-            grua_A3.setPosicion(0.,0.,-1.);
-
             grua_A4 = new Objeto3D(1,1);
-            grua_A4.initBuffers(3, 2,'cuadrado');
-            grua_A4.setRotacion(0., 0.,-Math.PI/2);
-            grua_A4.setPosicion(1.0,0.,-1.0);
-            
+            grua_A4.initBuffers(3, 2,'cuadrado');          
             grua_A1.agregarHijo(grua_A2);
             grua_A1.agregarHijo(grua_A3);
             grua_A1.agregarHijo(grua_A4);
-
+            grua_A2.setRotacion(0.,0.,Math.PI/2);
+            grua_A3.setPosicion(0.,0.,-1.);
+            grua_A4.setRotacion(0., 0.,-Math.PI/2);
+            grua_A4.setPosicion(1.,0.,-1.);
             // pieza B
             grua_B1 = new Objeto3D(1,1);
-            grua_B1.initBuffers(3, 2,'cuadrado');
-            grua_B1.setEscala(-0.5,-0.5,-0.5);
-            grua_B1.setPosicion(0.,0.9,0.);
-
+            grua_B1.initBuffers(4, 2,'cuadrado');
             grua_B2 = new Objeto3D(1,1);
-            grua_B2.initBuffers(3, 2,'cuadrado');        
-            grua_B2.setRotacion(0.,0.9, Math.PI/2.0);
-            grua_B2.setEscala(-0.5,-0.5,-0.5);
-
+            grua_B2.initBuffers(4, 2,'cuadrado');        
             grua_B3 = new Objeto3D(1,1);
-            grua_B3.initBuffers(3, 2,'cuadrado');
-            grua_B3.setPosicion(0.,0.9,0.5);
-            grua_B3.setEscala(-0.5,-0.5,-0.5);
-
+            grua_B3.initBuffers(4, 2,'cuadrado');
             grua_B4 = new Objeto3D(1,1);
-            grua_B4.initBuffers(3, 2,'cuadrado');
-            grua_B4.setRotacion(0.,0.,-Math.PI/2.0);
-            grua_B4.setPosicion(-0.5,0.9,0.5);
-            grua_B4.setEscala(-0.5,-0.5,-0.5);
-
+            grua_B4.initBuffers(4, 2,'cuadrado');
             grua_B1.agregarHijo(grua_B2);
             grua_B1.agregarHijo(grua_B3);
             grua_B1.agregarHijo(grua_B4);
-
-            //lo relaciono con la posición A
-            grua_B1.agregarHijo(grua_A1);
-            grua_A1.setPosicion(-0.8,-2.,0.55);
-            grua_A2.setPosicion(-0.8,-2.,0.55);
-            grua_A3.setPosicion(-0.8,-2.,-0.45);
-            grua_A4.setPosicion(0.2,-2.,-0.45);
-
-            // pieza C es un circulo 
+            grua_A1.agregarHijo(grua_B1);
+            //muevo los hijos
+            grua_B2.setPosicion(1.,0.,1.);
+            grua_B2.setRotacion(0.,0., Math.PI/2.0);
+            grua_B3.setPosicion(0.,0.,1.);
+            grua_B4.setRotacion(0.,0.,-Math.PI/2.0);
+            //se aplica a todos porque es el padre
+            grua_B1.setPosicion(0.75,3.,-0.25);
+            grua_B1.setEscala(-0.5,-0.5,-0.5);
+            // pieza C es un circulo / cilindro
             grua_C1 = new Objeto3D(8,8);
             grua_C1.initBuffers(11, 16,'circulo');
-            //lo relaciono con la posición B
-            grua_C1.setPosicion(-0.25,-0.7,0.2);
             grua_C1.setEscala(0.5,0.1,0.5);
-            grua_C1.agregarHijo(grua_B1);
-
+            grua_A1.agregarHijo(grua_C1);
+            grua_C1.setPosicion(0.5,1.35,-0.5);
             // pieza D es la cabina
+            // necesito D0 para que haga de centro de la cabina así puedo rotar después, es un contenedor
+            grua_D0 = new Objeto3D(1,1);
+            grua_D0.initBuffers(1, 1,'cabina');
             grua_D1 = new Objeto3D(2,2);
             grua_D1.initBuffers(3, 3,'cabina');
-            grua_D1.setRotacion(0.,0.,Math.PI);
-            grua_D1.setEscala(0.4,0.4,0.4);
-            grua_D1.setPosicion(0.2,1.5,0.);
-
             grua_D2 = new Objeto3D(2,2);
             grua_D2.initBuffers(3, 3,'cabina');
-            grua_D2.setRotacion(0.,0.,-Math.PI);
-            grua_D2.setEscala(0.4,0.4,0.4);
-            grua_D2.setPosicion(0.2,1.5,0.5);
-
-            grua_D3 = new Objeto3D(2,2);
-            grua_D3.initBuffers(3, 2,'cuadrado');        
-            grua_D3.setPosicion(0.2,1.5,0.5);
-            grua_D3.setRotacion(0.,0.,Math.PI/2);
-            grua_D3.setEscala(0.5,0.2,0.5);
-            //grua_D3.setPosicion(0.,2.3,0.);
-
+            grua_D3 = new Objeto3D(3,3);
+            grua_D3.initBuffers(3, 5,'cuadrado');        
             grua_D4 = new Objeto3D(2,2);
             grua_D4.initBuffers(3, 2,'cuadrado');        
-            grua_D4.setPosicion(-0.6,1.5,0.5);
+            grua_D0.setRotacion(0.,Math.PI/2,0.);
+            grua_D0.setPosicion(0.12,3.7,-0.65);
+            grua_D0.setEscala(0.4,0.2,0.4);
+            grua_D0.agregarHijo(grua_D1);
+            grua_D0.agregarHijo(grua_D2);
+            grua_D0.agregarHijo(grua_D3);
+            grua_D0.agregarHijo(grua_D4);
+            grua_A1.agregarHijo(grua_D0);
+
+            grua_D4.setPosicion(2.,0.,0.);
+            grua_D4.setEscala(1.3,0.5,1.);
             grua_D4.setRotacion(0.,0.,Math.PI/2);
-            grua_D4.setEscala(0.4,0.4,0.4);
 
-            grua_D1.agregarHijo(grua_D2);
-            grua_D1.agregarHijo(grua_D3);
-            grua_D1.agregarHijo(grua_D4);
+            grua_D3.setPosicion(0.,1.6,0.);
+            grua_D3.setRotacion(0.,-Math.PI/2,Math.PI/2);
+            grua_D2.setPosicion(2.,1.6,0.);
+            grua_D2.setRotacion(0.,-Math.PI/2, Math.PI);
+            grua_D1.setPosicion(2.,0.6,0.);
+            grua_D1.setRotacion(0.,-Math.PI/2, Math.PI);
 
-            //lo relaciono con la posición C
-            grua_D1.agregarHijo(grua_C1);
+            //pieza E - es la barra acostada
+            grua_E1 = new Objeto3D(2,2);
+            grua_E1.initBuffers(4, 2,'cuadrado');
+            grua_E1.setEscala(5.,0.1,0.);
+            grua_E1.setPosicion(0.5,3.7,-0.45);
+            grua_E2 = new Objeto3D(2,2);
+            grua_E2.initBuffers(4,2,'cuadrado');
+            grua_E2.setEscala(5.,0.1,0.);
+            grua_E2.setPosicion(0.5,3.7,-0.55);
+            //no son padre e hijo porque no se porque rollo no me toma los cambios sobre el padre
+            grua_A1.agregarHijo(grua_E1);
+            grua_A1.agregarHijo(grua_E2);
+
+            //pieza F0 va a ser el contenedor para F y G, ya que como van con distintas escalas necesito que no se molesten
+            //voy a hacerla tipo cilindro así se parece a la imagen original
+            grua_F0 = new Objeto3D(4,4);
+            grua_F0.initBuffers(4, 6,'circulo');
+            grua_F0.setEscala(0.3,-0.1,0.3);
+            grua_F0.setPosicion(4.5,3.8,1.15);
+            grua_F0.setRotacion(0.,Math.PI/2,0.);
+            grua_A1.agregarHijo(grua_F0);
+
+            //pieza F - cables
+            grua_F1 = new Objeto3D(1,1);
+            grua_F1.initBuffers(11, 2,'cuadrado');
+            grua_F1.setPosicion(4.5,3.75,-0.45);
+            grua_F1.setEscala(-0.02,-0.105,-1.); 
+            grua_A1.agregarHijo(grua_F1);
+
+            //este es un punto que cuelga al final de F1. Ese punto se debería mover cuando F1 escale y en consecuencia moverse sus hijos F2, F3 y G0
+            //no funciono.....
+            //grua_F1a = new Objeto3D(2,2);
+            //grua_F1a.initBuffers(2, 2,'circulo');
+            //grua_F1a.setPosicion(0.,-5.,0.);
+            //grua_F1.agregarHijo(grua_F1a);
+
+            //F2, F3 y G0 no pueden depender de F1 porque cuando expandis el cable, cambias la escala y los afectas
+            //por eso, dependen de F1a
+            grua_F2 = new Objeto3D(2,2);
+            grua_F2.initBuffers(4, 2,'cuadrado');
+            grua_F3 = new Objeto3D(2,2);
+            grua_F3.initBuffers(4, 2,'cuadrado');
+            grua_F0.agregarHijo(grua_F2);
+            grua_F0.agregarHijo(grua_F3);
+
+            grua_F2.setPosicion(0.25,16.5,3.5);
+            grua_F2.setRotacion(0.,0., -Math.PI/4);
+            grua_F2.setEscala(1.,0.3,1.); 
+
+            grua_F3.setPosicion(0.25,16.5,3.5);
+            grua_F3.setRotacion(0.,0., -Math.PI*3/4);
+            grua_F3.setEscala(1.,0.3,1.); 
+
+            //pieza G - plataforma
+            grua_G1 = new Objeto3D(2,2);
+            grua_G1.initBuffers(3, 2,'cuadrado');
+            grua_G1.setEscala(4.,8.,8.);
+            grua_G1.setPosicion(-2.,8.,4.25); //z es el alto, y profundidad, x es x esta cambiado porque depende de F0
+            grua_F0.agregarHijo(grua_G1);
+
+            //bajo toda la escena -1 en y y en -1 en x
+            grua_A1.setPosicion(-2.,-1.,0.);
 
 
         }
