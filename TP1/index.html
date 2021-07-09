@@ -94,6 +94,9 @@
         var valorCable = 0.1;
         var anchoVidrio = 3.;
         var altoVidrio = 3.;
+        var pisosTramo1 = 3.;
+        var pisosTramo2 = 3.;
+        var generarEdificio = false; 
 
         var lighting="true";
         var vertexShaderSource;
@@ -390,22 +393,26 @@
 
                     if (tipo == 'losa')
                     {vertices = losa;
-                    //uso dos niveles
+                    //uso tantos niveles como vertices
+                    //filas = vertices.length; 
+                    filas = 10; 
                     for (j=0; j<filas; j++){
                         y = j*1.0;
-                        //if (tipo == 'cuadrado')
-                        matrizNivel = crearRecorridoCuadrado(0.0, y, 0.0);
+                        matrizNivel = crearRecorridoCuadrado(y, 0., y);
                         translado = vec3.create();
                         translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
                         //guardo en el position buffer los vertices
                         for (i=0; i< vertices.length; i++){
-                            var pos = vec3.create();
-                            vec3.copy(pos,vertices[i]);
+                            que = vertices[i].x;
+                            onda = vertices[i].y;
+                            che = vertices[i].z;
+                            pos = vec3.create();
+                            pos = vec3.fromValues(que,onda,che);
                             vec3.add(pos,translado, pos);
                             positionBuffer.push(pos[0]);
                             positionBuffer.push(pos[1]);
                             positionBuffer.push(pos[2]);
-
+                            
                             var u=j/columnas;
                             var v=i/filas;
                             var nrm=this.getNormal(u,v);
@@ -422,8 +429,9 @@
                             uvBuffer.push(u);
                         }
                     }
+                    filas = 4;  
+                    columnas = vertices.length;  
                     }
-                    //console.log(positionBuffer);
 
                 // Buffer de indices de los triangulos
                 indexBuffer=[];
@@ -437,7 +445,6 @@
                         }
                         indexBuffer.push((i+1)*columnas+columnas-1);
                 }
-                //console.log(indexBuffer);
 
             // Creación e Inicialización de los buffers a nivel de OpenGL
                 this.webgl_normal_buffer = gl.createBuffer();
@@ -560,7 +567,15 @@
 
         function dibujarGeometria(){
             grua_A1.draw();
-            edif_vent1.draw();
+            for (i=0; i<Math.trunc(pisosTramo1); i++){
+                piso1.setPosicion(0.,i*1.,0.);
+                piso1.draw();}
+            //for (i=0; i<Math.trunc(pisosTramo2); i++){
+            //    piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
+            //    piso2.draw();
+            //}
+            
+
         }
 
         function tick() {
@@ -591,7 +606,11 @@
         }
 
         function initMenu(){
+            //text = new sampleText();
+            //setValue();
             var gui = new dat.GUI();
+            var props = [];
+            props.generarEdificio = function() {drawScene();      };            //var obj = { add:function(){ dibujarGeometria(); }};
             //gui.add(window, "distanciaCamara",0.01,5).step(0.01);
             //gui.add(window, "alturaCamara",-2,2).step(0.01);
             gui.add(window, "modo",["wireframe","smooth","edges"]);
@@ -600,7 +619,9 @@
             gui.add(window, "alturaCable",0.1,0.35).step(0.01);
             gui.add(window, "anchoVidrio",3.,10.).step(0.01);
             gui.add(window, "altoVidrio",3.,10.).step(0.01);
-
+            gui.add(window, "pisosTramo1",3.,10.).step(0.01);
+            gui.add(window, "pisosTramo2",3.,10.).step(0.01);
+            gui.add(props, 'generarEdificio').name('Generar Estructura');
 
         }
 
@@ -636,8 +657,8 @@
         function crearGeometriaEdificio(){
             var rect_invi =[];
 
+            //TIPO PISO 1
             piso1 = new Objeto3D(2,2);
-
             edif_vent1 = new Objeto3D(2,2);
             edif_vent1.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
             edif_vent1.setPosicion(0., 0., 15.);
@@ -652,27 +673,6 @@
             edif_vent1.agregarHijo(edif_vent3);
             edif_vent3.setPosicion(2., 0., 0.);
             rect_invi.push([2.0, 0.0, 13.]);
-            //giro
-            edif_vent4 = new Objeto3D(2,2);
-            edif_vent4.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent1.agregarHijo(edif_vent4);
-            edif_vent4.setRotacion(0.,0.,Math.PI/2);
-            rect_invi.push([-2.0, 0.0, 16.]);
-            edif_vent5 = new Objeto3D(2,2);
-            edif_vent5.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent4.agregarHijo(edif_vent5);
-            edif_vent5.setPosicion(1., 0., 0.);
-            rect_invi.push([-2.0, 0.0, 17.]);
-            edif_vent6 = new Objeto3D(2,2);
-            edif_vent6.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent4.agregarHijo(edif_vent6);
-            edif_vent6.setPosicion(2., 0., 0.);
-            rect_invi.push([-2.0, 0.0, 18.]);
-            edif_vent7 = new Objeto3D(2,2);
-            edif_vent7.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent4.agregarHijo(edif_vent7);
-            edif_vent7.setPosicion(3., 0., 0.);
-            rect_invi.push([-2.0, 0.0, 19.]);
             //giro para el otro lado
             edif_vent8 = new Objeto3D(2,2);
             edif_vent8.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
@@ -701,31 +701,63 @@
             edif_vent12.setRotacion(0.,0.,Math.PI/2);
             edif_vent12.setPosicion(1.,0.,0.);
             edif_vent11.agregarHijo(edif_vent12);
-            rect_invi.push([1.0, 0.0, 21.]);
             edif_vent13 = new Objeto3D(2,2);
             edif_vent13.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
             edif_vent12.agregarHijo(edif_vent13);
             edif_vent13.setPosicion(1., 0., 0.);
-            rect_invi.push([2.0, 0.0, 21.]);
             edif_vent14 = new Objeto3D(2,2);
             edif_vent14.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
             edif_vent12.agregarHijo(edif_vent14);
             edif_vent14.setPosicion(2., 0., 0.);
             rect_invi.push([3.0, 0.0, 21.]);
+            rect_invi.push([2.0, 0.0, 21.]);
+            rect_invi.push([1.0, 0.0, 21.]);
+            //giro
+            edif_vent4 = new Objeto3D(2,2);
+            edif_vent4.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
+            edif_vent1.agregarHijo(edif_vent4);
+            edif_vent4.setRotacion(0.,0.,Math.PI/2);
+            edif_vent5 = new Objeto3D(2,2);
+            edif_vent5.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
+            edif_vent4.agregarHijo(edif_vent5);
+            edif_vent5.setPosicion(1., 0., 0.);
+            edif_vent6 = new Objeto3D(2,2);
+            edif_vent6.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
+            edif_vent4.agregarHijo(edif_vent6);
+            edif_vent6.setPosicion(2., 0., 0.);
+            edif_vent7 = new Objeto3D(2,2);
+            edif_vent7.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
+            edif_vent4.agregarHijo(edif_vent7);
+            edif_vent7.setPosicion(3., 0., 0.);
+            rect_invi.push([-2.0, 0.0, 19.]);
+            rect_invi.push([-2.0, 0.0, 18.]);
+            rect_invi.push([-2.0, 0.0, 17.]);
+            rect_invi.push([-2.0, 0.0, 16.]);
+            rect_invi.push([0.0, 0.0, 13.]);
+            rect_invi.push([0.0, 0.0, 13.]);
 
             edif_vent1.setEscala(0.5,0.5,0.5);
             piso1.agregarHijo(edif_vent1);
 
             //envio los vertices del rectangulo invisible para obtener los nuevos con ruido Perlin
-            //var pto_ruido = []
-            //pto_ruido = getPerlin(rect_invi, 14);
+            var pto_ruido = []
+            //console.log(rect_invi);
+            pto_ruido = getPerlin(rect_invi, 14);
+            //console.log(pto_ruido);
+
             //obtengo la bspline cuadratica con esos vertices ruidosos
-            //var bspline = [];
-            //bspline = devuelvoCurva(pto_ruido, 14);
+            var bspline = [];
+            bspline = devuelvoCurva(pto_ruido, 14);
+            //console.log(bspline);
             //construyo la losa con esos vertices
-            //losa_piso1 = new Objeto3D(2,2);
-            //losa_piso1.initBuffers(4, 2,'losa', bspline);
-            //piso1.agregarHijo(losa_piso1);
+            losa_piso1 = new Objeto3D(2,2);
+            losa_piso1.initBuffers(4, 2,'losa', bspline);
+            losa_piso1.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
+            losa_piso1.setPosicion(-6.,0.,9.0);
+            losa_piso1.setEscala(0.45,0.6,0.45);
+            //losa_piso1.setPosicion(10.,10.,10.);
+            piso1.agregarHijo(losa_piso1);
+
 
 
         }
