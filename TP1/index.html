@@ -6,9 +6,10 @@
     <script src="js/dat.gui.js"></script>
     <script src="js/droneCamera.js"></script>
     <script src="modulo-geometria.js"></script>
-    <script src="modulo-calculos.js"></script>
     <script src="modulo-curvas.js"></script>
+    <script src="modulo-estructura.js"></script>
     <script src="perlin-noise.js"></script>
+    <script src="Objeto3D.js"></script>
     <style>
         html{
             height: 100%;
@@ -48,35 +49,6 @@
         var vec3=glMatrix.vec3;
         var vec4=glMatrix.vec4;
 
-        //edificio
-        var edif_vent1;
-        var edif_vent2;
-        var edif_vent3;
-
-        //grua
-        var grua_A1;
-        var grua_A2;
-        var grua_A3;
-        var grua_A4;
-        var grua_B1;
-        var grua_B2;
-        var grua_B3;
-        var grua_B4;
-        var grua_C1;
-        var grua_D0;
-        var grua_D1;
-        var grua_D2;
-        var grua_D3;
-        var grua_D4;
-        var grua_E1;
-        var grua_E2;
-        var grua_F0;
-        var grua_F1;
-        var grua_F1a;
-        var grua_F2;
-        var grua_F3;
-        var grua_G1;
-
         var matrizProyeccion = mat4.create();
         var matrizVista = mat4.create();
 
@@ -93,16 +65,17 @@
         var alturaCable=0.1;
         var valorCable = 0.1;
         var anchoVidrio = 3.;
+        var valorAnchoVidrio = 3.;
         var altoVidrio = 3.;
         var pisosTramo1 = 3.;
         var pisosTramo2 = 3.;
-        var generarEdificio = false; 
+        var generarEdificio = false;
 
         var lighting="true";
         var vertexShaderSource;
         var fragmentShaderSource;
 
-        var drone = new DroneCameraControl();
+        var drone = new DroneCameraControl([0,2,5]);
 
         function initGL(canvas) {
 
@@ -213,321 +186,6 @@
             shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
         }
 
-        function Objeto3D(ancho, largo){
-            this.matrizModelado=mat4.create();
-            mat4.identity(this.matrizModelado);
-            this.normalMatrix = mat3.create();
-            this.posicion=vec3.create();
-            this.rotacion=vec3.create();
-            //this.rotacion=[0.,0.,0.];
-            
-            this.escala=vec3.create();
-            this.hijos=[];
-
-            this.webgl_position_buffer = null;
-            this.webgl_normal_buffer = null;
-            this.webgl_texture_coord_buffer = null;
-            this.webgl_index_buffer = null;
-
-            this.agregarHijo=function(h) {this.hijos.push(h)}
-            //this.quitarHijo=function(h) { … }
-
-            this.setPosicion=function(x,y,z) { 
-                this.posicion = [x,y,z];
-                }
-
-            this.setRotacion=function(angulo, x,y,z) {
-                //guardo el ángulo en cada posicion
-                this.rotacion = [x,y,z];
-                }
-
-            this.setEscala=function(x,y,z) { 
-                this.escala = [x,y,z];
-                }
-
-            //agrego esto pero no lo uso, hasta deberia evaluar si va
-            this.getPosicion=function(u,v){
-                var x=(u-0.5)*ancho;
-                var z=(v-0.5)*largo;
-                return [x,z,0];
-            }
-            //agrego esto pero no lo uso, hasta deberia evaluar si va
-            this.getNormal=function(u,v){
-                return [0,1,0];
-            }
-            //agrego esto pero no lo uso, hasta deberia evaluar si va
-            this.getCoordenadasTextura=function(i,j, filas, columnas){
-                return [1.0/filas * i,1.0/columnas * j];
-            }
-
-            this.setMatrixUniforms=function() {
-                gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, this.matrizModelado);
-                gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, matrizVista);
-                gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, matrizProyeccion);
-
-                mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
-
-                mat3.invert(this.normalMatrix, this.normalMatrix);
-                mat3.transpose(this.normalMatrix, this.normalMatrix);
-
-                gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, this.normalMatrix);
-                }
-            
-            this.initBuffers = function(filas,columnas, tipo, losa){
-    
-                positionBuffer = [];
-                normalBuffer = [];
-                uvBuffer = [];
-                var matIdentidad = [];
-                var mat = mat3.create();
-                mat3.identity(mat);
-                matIdentidad.push(mat);
-                if (tipo == 'cuadrado')
-                    {vertices = crearCuadrado();
-                    //uso dos niveles
-                    for (j=0; j<filas; j++){
-                        y = j*1.0;
-                        //if (tipo == 'cuadrado')
-                        matrizNivel = crearRecorridoCuadrado(0.0, y, 0.0);
-                        translado = vec3.create();
-                        translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
-                        //guardo en el position buffer los vertices
-                        for (i=0; i< vertices.length; i++){
-                            var pos = vec3.create();
-                            vec3.copy(pos,vertices[i]);
-                            vec3.add(pos,translado, pos);
-                            positionBuffer.push(pos[0]);
-                            positionBuffer.push(pos[1]);
-                            positionBuffer.push(pos[2]);
-
-                            var u=j/columnas;
-                            var v=i/filas;
-                            var nrm=this.getNormal(u,v);
-                            normalBuffer.push(nrm[0]);
-                            normalBuffer.push(nrm[1]);
-                            normalBuffer.push(nrm[2]);
-                            var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
-                            uvBuffer.push(uvs[0]);
-                            uvBuffer.push(0.2);
-                            uvBuffer.push(uvs[1]);
-                            var u = (i / (filas - 1));
-                            var v = (j / (columnas - 1));
-                            uvBuffer.push(v);
-                            uvBuffer.push(u);
-                        }
-                    }
-                    }
-                if (tipo == 'circulo')
-                    {radio = 0.25;
-                    var y = 15.;
-                    vertices = crearCirculo(radio, y);
-                    //uso dos niveles
-                    for (j=0; j<filas; j++){
-                        y = j*1.0;
-                        matrizNivel = crearRecorridoCirculo(0.0, y, 0.0);
-                        translado = vec3.create();
-                        translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
-                        //guardo en el position buffer los vertices
-                        for (i=0; i< columnas; i++){
-                            var pos = vec3.create();
-                            vec3.copy(pos,vertices[i]);
-                            vec3.add(pos,translado, pos);
-
-                            positionBuffer.push(pos[0] );
-                            positionBuffer.push(pos[1] );
-                            positionBuffer.push(pos[2] );
-
-                            var u=j/columnas;
-                            var v=i/filas;
-                            var nrm=this.getNormal(u,v);
-                            normalBuffer.push(nrm[0]);
-                            normalBuffer.push(nrm[1]);
-                            normalBuffer.push(nrm[2]);
-                            var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
-                            uvBuffer.push(uvs[0]);
-                            uvBuffer.push(0.2);
-                            uvBuffer.push(uvs[1]);
-                            var u = (i / (filas - 1));
-                            var v = (j / (columnas - 1));
-                            uvBuffer.push(v);
-                            uvBuffer.push(u);
-                        }
-                    }
-                    }
-
-                    if (tipo == 'cabina')
-                    {vertices = crearCabina();
-                    //uso dos niveles
-                    for (j=0; j<filas; j++){
-                        y = j*1.0;
-                        //if (tipo == 'cuadrado')
-                        matrizNivel = crearRecorridoCuadrado(0.0, y, 0.0);
-                        translado = vec3.create();
-                        translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
-                        //guardo en el position buffer los vertices
-                        for (i=0; i< vertices.length; i++){
-                            var pos = vec3.create();
-                            vec3.copy(pos,vertices[i]);
-                            vec3.add(pos,translado, pos);
-                            positionBuffer.push(pos[0]);
-                            positionBuffer.push(pos[1]);
-                            positionBuffer.push(pos[2]);
-
-                            var u=j/columnas;
-                            var v=i/filas;
-                            var nrm=this.getNormal(u,v);
-                            normalBuffer.push(nrm[0]);
-                            normalBuffer.push(nrm[1]);
-                            normalBuffer.push(nrm[2]);
-                            var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
-                            uvBuffer.push(uvs[0]);
-                            uvBuffer.push(0.2);
-                            uvBuffer.push(uvs[1]);
-                            var u = (i / (filas - 1));
-                            var v = (j / (columnas - 1));
-                            uvBuffer.push(v);
-                            uvBuffer.push(u);
-                        }
-                    }
-                    }
-
-                    if (tipo == 'losa')
-                    {vertices = losa;
-                    //uso tantos niveles como vertices
-                    //filas = vertices.length; 
-                    filas = 10; 
-                    for (j=0; j<filas; j++){
-                        y = j*1.0;
-                        matrizNivel = crearRecorridoCuadrado(y, 0., y);
-                        translado = vec3.create();
-                        translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
-                        //guardo en el position buffer los vertices
-                        for (i=0; i< vertices.length; i++){
-                            que = vertices[i].x;
-                            onda = vertices[i].y;
-                            che = vertices[i].z;
-                            pos = vec3.create();
-                            pos = vec3.fromValues(que,onda,che);
-                            vec3.add(pos,translado, pos);
-                            positionBuffer.push(pos[0]);
-                            positionBuffer.push(pos[1]);
-                            positionBuffer.push(pos[2]);
-                            
-                            var u=j/columnas;
-                            var v=i/filas;
-                            var nrm=this.getNormal(u,v);
-                            normalBuffer.push(nrm[0]);
-                            normalBuffer.push(nrm[1]);
-                            normalBuffer.push(nrm[2]);
-                            var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
-                            uvBuffer.push(uvs[0]);
-                            uvBuffer.push(0.2);
-                            uvBuffer.push(uvs[1]);
-                            var u = (i / (filas - 1));
-                            var v = (j / (columnas - 1));
-                            uvBuffer.push(v);
-                            uvBuffer.push(u);
-                        }
-                    }
-                    filas = 4;  
-                    columnas = vertices.length;  
-                    }
-
-                // Buffer de indices de los triangulos
-                indexBuffer=[];
-                for (var i=0;i<filas-1;i++){
-                        indexBuffer.push(i*columnas);
-                        for (var j=0;j<columnas-1;j++){
-                            indexBuffer.push(i*columnas+j);
-                            indexBuffer.push((i+1)*columnas+j);
-                            indexBuffer.push(i*columnas+j+1);
-                            indexBuffer.push((i+1)*columnas+j+1);
-                        }
-                        indexBuffer.push((i+1)*columnas+columnas-1);
-                }
-
-            // Creación e Inicialización de los buffers a nivel de OpenGL
-                this.webgl_normal_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalBuffer), gl.STATIC_DRAW);
-                this.webgl_normal_buffer.itemSize = 3;
-                this.webgl_normal_buffer.numItems = normalBuffer.length / 3;
-
-                this.webgl_texture_coord_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvBuffer), gl.STATIC_DRAW);
-                this.webgl_texture_coord_buffer.itemSize = 2;
-                this.webgl_texture_coord_buffer.numItems = uvBuffer.length / 2;
-
-                this.webgl_position_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionBuffer), gl.STATIC_DRAW);
-                this.webgl_position_buffer.itemSize = 3;
-                this.webgl_position_buffer.numItems = positionBuffer.length / 3;
-
-                this.webgl_index_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexBuffer), gl.STATIC_DRAW);
-                this.webgl_index_buffer.itemSize = 1;
-                this.webgl_index_buffer.numItems = indexBuffer.length;
-            }
-
-            this.actualizarMatrizModelado = function(){
-                mat4.identity(this.matrizModelado);
-                if(this.posicion[0]!=0. || this.posicion[1]!=0. || this.posicion[2]!=0.)
-                    mat4.translate(this.matrizModelado, this.matrizModelado, this.posicion);
-                if(this.rotacion[0]!=0. && typeof this.rotacion[0] !== "undefined")
-                    mat4.rotate(this.matrizModelado, this.matrizModelado, this.rotacion[0], [1.0,0.,0.]);
-                if(this.rotacion[1]!=0. && typeof this.rotacion[1] !== "undefined")
-                    mat4.rotate(this.matrizModelado, this.matrizModelado, this.rotacion[1], [0.,1.0,0.]);
-                if(this.rotacion[2]!=0. && typeof this.rotacion[2] !== "undefined")
-                    mat4.rotate(this.matrizModelado, this.matrizModelado, this.rotacion[2], [0.,0.,1.0]);
-                if(this.escala[0]!=0. || this.escala[1]!=0. || this.escala[2]!=0.)
-                    mat4.scale(this.matrizModelado, this.matrizModelado, this.escala);
-
-            }
-
-            this.draw = function(matPadre){
-                    this.actualizarMatrizModelado();
-                    // concatenamos las transformaciones padre/hijo
-                    if(matPadre){
-                        mat4.multiply(this.matrizModelado,matPadre,this.matrizModelado);
-                        }
-
-                    if (this.webgl_position_buffer && this.webgl_index_buffer){
-                    // dibujamos la malla de triángulos con WebGL
-                    // si el objeto tiene geometría asociada
-                        this.setMatrixUniforms();
-
-                        // Se configuran los buffers que alimentaron el pipeline
-                        gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
-                        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
-
-                        gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
-                        gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
-
-                        gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
-                        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
-
-                        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
-
-                        if (modo!="wireframe"){
-                            gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
-                            gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
-                        }
-
-                        if (modo!="smooth") {
-                            gl.uniform1i(shaderProgram.useLightingUniform,false);
-                            gl.drawElements(gl.LINE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
-                        }
-                    }
-                    for (var i=0;i<this.hijos.length;i++){
-                        //le mando la matriz de modelado del padre
-                        this.hijos[i].draw(this.matrizModelado);}
-            }
-
-        }
-
         function drawScene() {
 
             // Se configura el viewport dentro del "canvas".
@@ -544,19 +202,34 @@
             mat4.scale(matrizProyeccion,matrizProyeccion,[1,-1,1]); // parche para hacer un flip de Y, parece haber un bug en glmatrix
 
             // Se inicializan las variables asociadas con la Iluminación
-
             gl.uniform1f(shaderProgram.frameUniform, time/10.0 );
             gl.uniform3f(shaderProgram.ambientColorUniform, 0.6, 0.6, 0.6 );
             //gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
             gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
-            matrizVista = drone.getMatrix();
+            //document.addEventListener("keyup",function(e){
+            matrizVista = drone.getViewMatrix();
+            //});
+            /*
+            document.addEventListener("keydown",function(e){
             // Definimos la ubicación de la camara
-            //mat4.lookAt(matrizVista,
-            //    vec3.fromValues(0,alturaCamara,distanciaCamara),
-            //    vec3.fromValues(0,0,0),
-            //    vec3.fromValues(0,1,0)
-            //);
+                mat4.lookAt(matrizVista,
+                    vec3.fromValues(0,alturaCamara,distanciaCamara),
+                    vec3.fromValues(0,0,0),
+                    vec3.fromValues(0,1,0)
+                );
+            });
+*/
+
+            $(document).keypress(function(e) {
+                var keyCode = e.keyCode;
+
+                if(keyCode == 9) //es el menos
+                    {
+                    console.log("You pressed W!");
+                    }
+                    
+            });
 
             var lightPosition = [10.0,0.0, 3.0];
             gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
@@ -570,12 +243,26 @@
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
                 piso1.draw();}
-            //for (i=0; i<Math.trunc(pisosTramo2); i++){
-            //    piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
-            //    piso2.draw();
-            //}
+            for (i=0; i<Math.trunc(pisosTramo2); i++){
+                piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
+                piso2.draw();}    
+            tobogan.draw();
+            /*
+            for (i=0; i<3; i++){
+                //primer tramo
+                tobogan.setPosicion(4.- (i/2)*0.9,3.+ (i/2) ,12.- i*0.5);
+                if(i=0){
+                    tobogan_inv.setPosicion(-2. + (i*1.5),-2.2, 3.+ i);
+                    tobogan_inv.setRotacion(Math.PI/2, 0.,Math.PI/2);}
             
-
+                //tobogan_sub.setPosicion(0.,-3.,0.5);
+                tobogan.draw();}
+            */             
+                
+            for (i=0; i<15; i++){
+                pasto.setPosicion(-7+i,0.,-8.);
+                pasto.draw();
+            }
         }
 
         function tick() {
@@ -601,304 +288,37 @@
                         expandirCable(valorCable);
                     valorCable = alturaCable;}
 
+            if (Math.trunc(anchoVidrio)!=Math.trunc(valorAnchoVidrio))
+                {
+                    valorAnchoVidrio = Math.trunc(anchoVidrio);
+                    for (i=0; i<Math.trunc(pisosTramo1); i++){
+                        anchoVidrio = Math.trunc(anchoVidrio)*10;
+                        cambiarVentanasAncho(anchoVidrio);
+                        piso1.setPosicion(0.,i*1.,0.);
+                        piso1.draw();}
+                }                    
+
             drone.update();
             drawScene();
         }
 
         function initMenu(){
-            //text = new sampleText();
-            //setValue();
             var gui = new dat.GUI();
             var props = [];
-            props.generarEdificio = function() {drawScene();      };            //var obj = { add:function(){ dibujarGeometria(); }};
-            //gui.add(window, "distanciaCamara",0.01,5).step(0.01);
-            //gui.add(window, "alturaCamara",-2,2).step(0.01);
+            props.generarEdificio = function() {drawScene();      };       
+            gui.add(window, "distanciaCamara",0.01,5).step(0.01);
+            gui.add(window, "alturaCamara",-2,2).step(0.01);
             gui.add(window, "modo",["wireframe","smooth","edges"]);
             gui.add(window, "alturaGrua",-1.,0.7).step(0.01);
             gui.add(window, "rotarCabina",0.,4.).step(0.01);
-            gui.add(window, "alturaCable",0.1,0.35).step(0.01);
-            gui.add(window, "anchoVidrio",3.,10.).step(0.01);
-            gui.add(window, "altoVidrio",3.,10.).step(0.01);
             gui.add(window, "pisosTramo1",3.,10.).step(0.01);
             gui.add(window, "pisosTramo2",3.,10.).step(0.01);
+            //no hace falta tocarlo
             gui.add(props, 'generarEdificio').name('Generar Estructura');
-
-        }
-
-        //funciones para la grua
-        function expandirGrua(altura)
-        {
-            if (altura < 0.08)
-                grua_B1.setPosicion(0.75,altura + 3.,-0.25);
-            grua_C1.setPosicion(0.5,altura+0.65,-0.5);
-            grua_E1.setPosicion(0.5,altura + 3.,-0.45);
-            grua_E2.setPosicion(0.5,altura + 3.,-0.55);
-            grua_F1.setPosicion(9.,altura +3.,0.);
-            grua_F0.setPosicion(5.,altura +4.3,5.);
-        }
-
-        //NO ANDA!
-        function expandirCable(altura)
-        {
-            //pongo 20 por poner un valor y probar 
-            grua_F1.setPosicion(0.,20.,0.);
-            grua_F1.setEscala(0.,-altura,0.);
-        }
-        
-        function rotacionCabina(alpha)
-        {   //rotación original
-            grua_C1.setRotacion(0.,0.,alpha);
-            grua_E1.setRotacion(0.,0.,alpha);
-            grua_E2.setRotacion(0.,0.,alpha);
-            grua_F0.setRotacion(0.,-(Math.PI/4) + alpha,0.);
-            grua_F1.setRotacion(0.,0.,alpha);
-        }
-
-        function crearGeometriaEdificio(){
-            var rect_invi =[];
-
-            //TIPO PISO 1
-            piso1 = new Objeto3D(2,2);
-            edif_vent1 = new Objeto3D(2,2);
-            edif_vent1.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent1.setPosicion(0., 0., 15.);
-            rect_invi.push([0.0, 0.0, 13.]);
-            edif_vent2 = new Objeto3D(2,2);
-            edif_vent2.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent1.agregarHijo(edif_vent2);
-            edif_vent2.setPosicion(1., 0., 0.);
-            rect_invi.push([1.0, 0.0, 13.]);
-            edif_vent3 = new Objeto3D(2,2);
-            edif_vent3.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent1.agregarHijo(edif_vent3);
-            edif_vent3.setPosicion(2., 0., 0.);
-            rect_invi.push([2.0, 0.0, 13.]);
-            //giro para el otro lado
-            edif_vent8 = new Objeto3D(2,2);
-            edif_vent8.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent3.agregarHijo(edif_vent8);
-            edif_vent8.setPosicion(1.,0.,0.);
-            edif_vent8.setRotacion(0.,0.,Math.PI/2);
-            rect_invi.push([5.0, 0.0, 15.]);
-            edif_vent9 = new Objeto3D(2,2);
-            edif_vent9.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent8.agregarHijo(edif_vent9);
-            edif_vent9.setPosicion(1., 0., 0.);
-            rect_invi.push([5.0, 0.0, 16.]);
-            edif_vent10 = new Objeto3D(2,2);
-            edif_vent10.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent8.agregarHijo(edif_vent10);
-            edif_vent10.setPosicion(2., 0., 0.);
-            rect_invi.push([5.0, 0.0, 17.]);
-            edif_vent11 = new Objeto3D(2,2);
-            edif_vent11.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent8.agregarHijo(edif_vent11);
-            edif_vent11.setPosicion(3., 0., 0.);
-            rect_invi.push([5.0, 0.0, 18.]);
-            //cierro las ventanas
-            edif_vent12 = new Objeto3D(2,2);
-            edif_vent12.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent12.setRotacion(0.,0.,Math.PI/2);
-            edif_vent12.setPosicion(1.,0.,0.);
-            edif_vent11.agregarHijo(edif_vent12);
-            edif_vent13 = new Objeto3D(2,2);
-            edif_vent13.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent12.agregarHijo(edif_vent13);
-            edif_vent13.setPosicion(1., 0., 0.);
-            edif_vent14 = new Objeto3D(2,2);
-            edif_vent14.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent12.agregarHijo(edif_vent14);
-            edif_vent14.setPosicion(2., 0., 0.);
-            rect_invi.push([3.0, 0.0, 21.]);
-            rect_invi.push([2.0, 0.0, 21.]);
-            rect_invi.push([1.0, 0.0, 21.]);
-            //giro
-            edif_vent4 = new Objeto3D(2,2);
-            edif_vent4.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent1.agregarHijo(edif_vent4);
-            edif_vent4.setRotacion(0.,0.,Math.PI/2);
-            edif_vent5 = new Objeto3D(2,2);
-            edif_vent5.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent4.agregarHijo(edif_vent5);
-            edif_vent5.setPosicion(1., 0., 0.);
-            edif_vent6 = new Objeto3D(2,2);
-            edif_vent6.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent4.agregarHijo(edif_vent6);
-            edif_vent6.setPosicion(2., 0., 0.);
-            edif_vent7 = new Objeto3D(2,2);
-            edif_vent7.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
-            edif_vent4.agregarHijo(edif_vent7);
-            edif_vent7.setPosicion(3., 0., 0.);
-            rect_invi.push([-2.0, 0.0, 19.]);
-            rect_invi.push([-2.0, 0.0, 18.]);
-            rect_invi.push([-2.0, 0.0, 17.]);
-            rect_invi.push([-2.0, 0.0, 16.]);
-            rect_invi.push([0.0, 0.0, 13.]);
-            rect_invi.push([0.0, 0.0, 13.]);
-
-            edif_vent1.setEscala(0.5,0.5,0.5);
-            piso1.agregarHijo(edif_vent1);
-
-            //envio los vertices del rectangulo invisible para obtener los nuevos con ruido Perlin
-            var pto_ruido = []
-            //console.log(rect_invi);
-            pto_ruido = getPerlin(rect_invi, 14);
-            //console.log(pto_ruido);
-
-            //obtengo la bspline cuadratica con esos vertices ruidosos
-            var bspline = [];
-            bspline = devuelvoCurva(pto_ruido, 14);
-            //console.log(bspline);
-            //construyo la losa con esos vertices
-            losa_piso1 = new Objeto3D(2,2);
-            losa_piso1.initBuffers(4, 2,'losa', bspline);
-            losa_piso1.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
-            losa_piso1.setPosicion(-6.,0.,9.0);
-            losa_piso1.setEscala(0.45,0.6,0.45);
-            //losa_piso1.setPosicion(10.,10.,10.);
-            piso1.agregarHijo(losa_piso1);
-
-
-
-        }
-
-
-        function crearGeometriaGrua(){
-            // GRUA
-            // pieza A
-            //ancho, largo
-            grua_A1 = new Objeto3D(1,1);
-            grua_A1.initBuffers(3, 2,'cuadrado');
-            grua_A2 = new Objeto3D(1,1);
-            grua_A2.initBuffers(3, 2,'cuadrado');        
-            grua_A3 = new Objeto3D(1,1);
-            grua_A3.initBuffers(3, 2,'cuadrado');
-            grua_A4 = new Objeto3D(1,1);
-            grua_A4.initBuffers(3, 2,'cuadrado');          
-            grua_A1.agregarHijo(grua_A2);
-            grua_A1.agregarHijo(grua_A3);
-            grua_A1.agregarHijo(grua_A4);
-            grua_A2.setRotacion(0.,0.,Math.PI/2);
-            grua_A3.setPosicion(0.,0.,-1.);
-            grua_A4.setRotacion(0., 0.,-Math.PI/2);
-            grua_A4.setPosicion(1.,0.,-1.);
-            // pieza B
-            grua_B1 = new Objeto3D(1,1);
-            grua_B1.initBuffers(4, 2,'cuadrado');
-            grua_B2 = new Objeto3D(1,1);
-            grua_B2.initBuffers(4, 2,'cuadrado');        
-            grua_B3 = new Objeto3D(1,1);
-            grua_B3.initBuffers(4, 2,'cuadrado');
-            grua_B4 = new Objeto3D(1,1);
-            grua_B4.initBuffers(4, 2,'cuadrado');
-            grua_B1.agregarHijo(grua_B2);
-            grua_B1.agregarHijo(grua_B3);
-            grua_B1.agregarHijo(grua_B4);
-            grua_A1.agregarHijo(grua_B1);
-            //muevo los hijos
-            grua_B2.setPosicion(1.,0.,1.);
-            grua_B2.setRotacion(0.,0., Math.PI/2.0);
-            grua_B3.setPosicion(0.,0.,1.);
-            grua_B4.setRotacion(0.,0.,-Math.PI/2.0);
-            //se aplica a todos porque es el padre
-            grua_B1.setPosicion(0.75,3.,-0.25);
-            grua_B1.setEscala(-0.5,-0.5,-0.5);
-            // pieza C es un circulo / cilindro
-            grua_C1 = new Objeto3D(8,8);
-            grua_C1.initBuffers(11, 16,'circulo');
-            grua_C1.setEscala(0.5,0.1,0.5);
-            grua_A1.agregarHijo(grua_C1);
-            grua_C1.setPosicion(0.5,1.35,-0.5);
-            // pieza D es la cabina
-            // necesito D0 para que haga de centro de la cabina así puedo rotar después, es un contenedor
-            grua_D1 = new Objeto3D(2,2);
-            grua_D1.initBuffers(3, 3,'cabina');
-            grua_D2 = new Objeto3D(2,2);
-            grua_D2.initBuffers(3, 3,'cabina');
-            grua_D3 = new Objeto3D(2,2);
-            grua_D3.initBuffers(3, 2,'cuadrado');        
-            grua_D4 = new Objeto3D(2,2);
-            grua_D4.initBuffers(3, 2,'cuadrado');        
-            grua_C1.agregarHijo(grua_D1);
-            grua_C1.agregarHijo(grua_D2);
-            grua_C1.agregarHijo(grua_D3);
-            grua_C1.agregarHijo(grua_D4);
-
-            grua_D4.setPosicion(0.5,25.,0.25);
-            grua_D4.setRotacion(0.,0.,Math.PI/2);
-            grua_D4.setEscala(0.5,1.0,0.5);
-
-            grua_D3.setPosicion(-1.5,29.,0.25);
-            grua_D3.setRotacion(0.,-Math.PI/2,Math.PI/2);
-            grua_D3.setEscala(3.8,0.25,1.);
-
-            //cara de atras
-            grua_D2.setEscala(1.,2.,0.);
-            grua_D2.setRotacion(Math.PI/2,0., Math.PI);
-            grua_D2.setPosicion(0.5,25.,-0.25);
-
-            //cara de atras
-            grua_D1.setEscala(1.,2.,0.);
-            grua_D1.setRotacion(Math.PI/2,0., Math.PI);
-            grua_D1.setPosicion(0.5,25.,0.25);
-
-            //pieza E - es la barra acostada
-            grua_E1 = new Objeto3D(2,2);
-            grua_E1.initBuffers(4, 2,'cuadrado');
-            grua_E1.setEscala(5.,0.1,0.);
-            grua_E1.setPosicion(0.5,3.7,-0.45);
-            grua_E2 = new Objeto3D(2,2);
-            grua_E2.initBuffers(4,2,'cuadrado');
-            grua_E2.setEscala(5.,0.1,0.);
-            grua_E2.setPosicion(0.5,3.7,-0.55);
-            //no son padre e hijo porque no se porque rollo no me toma los cambios sobre el padre
-            grua_A1.agregarHijo(grua_E1);
-            grua_A1.agregarHijo(grua_E2);
-
-            //pieza F0 va a ser el contenedor para F y G, ya que como van con distintas escalas necesito que no se molesten
-            //voy a hacerla tipo cilindro así se parece a la imagen original
-            //F0 va a depender de la pieza C1 porque al rotar, necesito que se mueva también
-            grua_F0 = new Objeto3D(1,1);
-            grua_F0.initBuffers(1, 1,'circulo');
-            grua_F0.setPosicion(5.,5.,5.);
-            grua_F0.setEscala(0.3,-0.1,0.3);
-            grua_F0.setRotacion(0.,Math.PI/2,0.);
-            grua_C1.agregarHijo(grua_F0);
-
-            //pieza F - cables
-            grua_F1 = new Objeto3D(1,1);
-            grua_F1.initBuffers(45, 2,'cuadrado');
-            grua_F1.setPosicion(9.,3.75,0.);
-            grua_F1.setEscala(0.,0.5,2.); 
-            grua_C1.agregarHijo(grua_F1);
-
-            //F2, F3 y G0 no pueden depender de F1 porque cuando expandis el cable, cambias la escala y los afectas
-            //por eso, dependen de F1a
-            grua_F2 = new Objeto3D(2,2);
-            grua_F2.initBuffers(4, 2,'cuadrado');
-            grua_F3 = new Objeto3D(2,2);
-            grua_F3.initBuffers(4, 2,'cuadrado');
-            grua_F0.agregarHijo(grua_F2);
-            grua_F0.agregarHijo(grua_F3);
-
-            grua_F2.setPosicion(13.2,50.,4.);
-            grua_F2.setRotacion(0.,0., -Math.PI/4);
-            grua_F2.setEscala(2.,0.05,1.); 
-
-            grua_F3.setPosicion(13.2,50.,4.);
-            grua_F3.setRotacion(0.,0., -Math.PI*3/4);
-            grua_F3.setEscala(2.,0.05,1.); 
-
-            //pieza G - plataforma
-            grua_G1 = new Objeto3D(2,2);
-            grua_G1.initBuffers(3, 2,'cuadrado');
-            grua_G1.setPosicion(11.,40.,5.5); //z es el alto, y profundidad, x es x esta cambiado porque depende de F0
-            grua_G1.setEscala(4.,8.,8.);
-            grua_F0.agregarHijo(grua_G1);
-
-            //bajo toda la escena -1 en y y en -1 en x
-            grua_A1.setPosicion(-2.,0.,0.);
-
+            //no anda las funciones asi que no lo muestro
+            //gui.add(window, "alturaCable",0.1,0.35).step(0.01);
+            //gui.add(window, "anchoVidrio",3.,10.).step(0.01);
+            //gui.add(window, "altoVidrio",3.,10.).step(0.01);
 
         }
 
@@ -909,6 +329,8 @@
 
             crearGeometriaGrua();
             crearGeometriaEdificio();
+            crearGeometriaTobogan();
+            crearGeometriaPasto();
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);

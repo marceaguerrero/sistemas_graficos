@@ -17,11 +17,11 @@
             
             vec3 lightDirection= normalize(uLightPosition - vec3(vWorldPosition));
             
-            //vec3 color=(uAmbientColor+uDirectionalColor*max(dot(vNormal,lightDirection), 0.0));
-           vec3 color;
+            vec3 color=(uAmbientColor+uDirectionalColor*max(dot(vNormal,lightDirection), 0.0));
+           //vec3 color;
            color.x=vUv.x;
            color.y=vUv.y;
-           color.z=0.0;
+           //color.z=0.0;
            
             if (uUseLighting)
                 gl_FragColor = vec4(color,1.0);
