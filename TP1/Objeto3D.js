@@ -52,6 +52,7 @@ class Objeto3D {
             }
 
         this.setEscala=function(x,y,z) {
+            //guardo la escala
             this.escala = [x,y,z];
             }
 
@@ -196,21 +197,32 @@ class Objeto3D {
                         var v = (j / (columnas - 1));
                         uvBuffer.push(v);
                         uvBuffer.push(u);
-                    }
+                    
                 }
-                }
+                }}
 
                 if (tipo == 'losa')
-                {vertices = losa;
-                //uso tantos niveles como vertices
-                //filas = vertices.length;
-                filas = 10;
+                {
+                var centro={
+                    "x":0.,
+                    "y":0.,
+                    "z":0.
+                    }		
+                centro = losa[losa.length-1];
+                console.log(centro);
+    
+                vertices = losa;
+                //le saco el centro
+                vertices.pop();
+                //a partir de 4 dibuja bien el borde
+                filas = 4;
+                console.log(vertices);
                 for (j=0; j<filas; j++){
-                    y = j*1.0;
-                    matrizNivel = crearRecorridoCuadrado(y, 0., y);
+                    //si lo multiplico por j tiene altura
+                    y = 1.0;
+                    matrizNivel = crearRecorridoLosa(0., y, 0.);
                     translado = vec3.create();
                     translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
-                    //guardo en el position buffer los vertices
                     for (i=0; i< vertices.length; i++){
                         var que;
                         var onda;
@@ -241,9 +253,32 @@ class Objeto3D {
                         uvBuffer.push(u);
                     }
                 }
-                filas = 4;
-                columnas = vertices.length;
+                //ahora dibujo la tapa, todos los vertices para el centro
+                var tapa=[];
+                //tapa = losa;
+                matrizNivel = crearRecorridoLosa(centro.x, centro.y, centro.z);
+                translado = vec3.create();
+                translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
+                console.log(translado);
+                for (i=0; i< vertices.length; i++){
+                    var punto={
+                        "x":0.,
+                        "y":0.,
+                        "z":0.
+                        }		
+                    punto.x = (vertices[i].x - translado[0])/2. + translado[0];
+                    punto.y = (vertices[i].y - translado[1])/2. + translado[1];
+                    punto.z = (vertices[i].z - translado[2])/2. + translado[2];
+                    tapa.push(vertices[i]);
+                    tapa.push(punto);
                 }
+                
+                console.log(tapa);
+                filas = 4;
+                columnas = tapa.length;
+
+            }
+
                 if (tipo == 'tobogan')
                 {vertices = losa;
                 //uso tantos niveles como vertices

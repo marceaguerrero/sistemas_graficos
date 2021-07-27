@@ -302,6 +302,7 @@ function crearGeometriaEdificio(){
     //obtengo la bspline cuadratica con esos vertices ruidosos
     var bspline = [];
     bspline = devuelvoCurvaBspline(pto_ruido, 12);
+    
     //console.log(bspline);
     //construyo la losa con esos vertices
     losa_piso2 = new Objeto3D(2,2);
@@ -490,72 +491,18 @@ function rotacionCabina(alpha)
     grua_C1.setRotacion(0.,0.,alpha);
 }
 
+function cambiarVentanas(ancho, largo){
 
-//no anda
-function cambiarVentanasAncho(ancho, largo){
+    if (ancho < 0)
+        {ancho = ancho * (-1);}
+    ancho = ancho - 2.5;
 
-    edif_vent1.setAncho(ancho);
-    edif_vent1.setLargo(largo);
-    edif_vent1.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent2.setAncho(ancho);
-    edif_vent2.setLargo(largo);
-    edif_vent2.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent3.setAncho(ancho);
-    edif_vent3.setLargo(largo);
-    edif_vent3.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent4.setAncho(ancho);
-    edif_vent4.setLargo(largo);
-    edif_vent4.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent5.setAncho(ancho);
-    edif_vent5.setLargo(largo);
-    edif_vent5.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent6.setAncho(ancho);
-    edif_vent6.setLargo(largo);
-    edif_vent6.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent7.setAncho(ancho);
-    edif_vent7.setLargo(largo);
-    edif_vent7.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent8.setAncho(ancho);
-    edif_vent8.setLargo(largo);
-    edif_vent8.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent9.setAncho(ancho);
-    edif_vent9.setLargo(largo);
-    edif_vent9.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent10.setAncho(ancho);
-    edif_vent10.setLargo(largo);
-    edif_vent10.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent11.setAncho(ancho);
-    edif_vent11.setLargo(largo);
-    edif_vent11.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent12.setAncho(ancho);
-    edif_vent12.setLargo(largo);
-    edif_vent12.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent13.setAncho(ancho);
-    edif_vent13.setLargo(largo);
-    edif_vent13.initBuffers(ancho, largo-1.,'cuadrado');
-    edif_vent14.setAncho(ancho);
-    edif_vent14.setLargo(largo);
-    edif_vent14.initBuffers(ancho, largo-1.,'cuadrado');
+    if (largo < 0)
+        {largo = largo * (-1);}
+    largo = largo - 2.5;
+
+    edif_vent1.setEscala(ancho, largo, 1.);
     
+    edif2_vent1.setEscala(ancho, largo, 1.);
+
 }
-//no anda
-
-function cambiarVentanasLargo(largo){
-
-    edif_vent1.setLargo(largo);
-    edif_vent2.setLargo(largo);
-    edif_vent3.setLargo(largo);
-    edif_vent4.setLargo(largo);
-    edif_vent5.setLargo(largo);
-    edif_vent6.setLargo(largo);
-    edif_vent7.setLargo(largo);
-    edif_vent8.setLargo(largo);
-    edif_vent9.setLargo(largo);
-    edif_vent10.setLargo(largo);
-    edif_vent11.setLargo(largo);
-    edif_vent12.setLargo(largo);
-    edif_vent13.setLargo(largo);
-    edif_vent14.setLargo(largo);
-    
-}
-

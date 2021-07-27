@@ -67,6 +67,7 @@
         var anchoVidrio = 3.;
         var valorAnchoVidrio = 3.;
         var altoVidrio = 3.;
+        var valorAltoVidrio = 3.;
         var pisosTramo1 = 3.;
         var pisosTramo2 = 3.;
         var generarEdificio = false;
@@ -234,11 +235,14 @@
             var lightPosition = [10.0,0.0, 3.0];
             gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
 
-            dibujarGeometria();
+            losa_piso1.draw();
+            //dibujarGeometria();
 
         }
 
         function dibujarGeometria(){
+
+
             grua_A1.draw();
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
@@ -288,15 +292,17 @@
                         expandirCable(valorCable);
                     valorCable = alturaCable;}
 
-            if (Math.trunc(anchoVidrio)!=Math.trunc(valorAnchoVidrio))
+            if (anchoVidrio!=valorAnchoVidrio)
                 {
-                    valorAnchoVidrio = Math.trunc(anchoVidrio);
-                    for (i=0; i<Math.trunc(pisosTramo1); i++){
-                        anchoVidrio = Math.trunc(anchoVidrio)*10;
-                        cambiarVentanasAncho(anchoVidrio);
-                        piso1.setPosicion(0.,i*1.,0.);
-                        piso1.draw();}
+                    valorAnchoVidrio = anchoVidrio;
+                    cambiarVentanas(anchoVidrio, altoVidrio);
                 }                    
+
+            if (altoVidrio!=valorAltoVidrio)
+            {
+                valorAltoVidrio = altoVidrio;
+                cambiarVentanas(anchoVidrio, altoVidrio);
+            }                    
 
             drone.update();
             drawScene();
@@ -313,12 +319,12 @@
             gui.add(window, "rotarCabina",0.,4.).step(0.01);
             gui.add(window, "pisosTramo1",3.,10.).step(0.01);
             gui.add(window, "pisosTramo2",3.,10.).step(0.01);
-            //no hace falta tocarlo
-            gui.add(props, 'generarEdificio').name('Generar Estructura');
             //no anda las funciones asi que no lo muestro
             //gui.add(window, "alturaCable",0.1,0.35).step(0.01);
-            //gui.add(window, "anchoVidrio",3.,10.).step(0.01);
-            //gui.add(window, "altoVidrio",3.,10.).step(0.01);
+            gui.add(window, "anchoVidrio",3.,4.).step(0.01);
+            gui.add(window, "altoVidrio",3.,4.).step(0.01);
+            //no hace falta tocarlo
+            gui.add(props, 'generarEdificio').name('Generar Estructura');
 
         }
 

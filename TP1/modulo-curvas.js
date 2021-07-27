@@ -85,9 +85,14 @@
     function devuelvoCurvaBspline(puntosDeControl, tamanio){
         var resultado=[];
         //u = [0., 0.25, 0.5, 0.75, 1.];
-        var deltaU=0.01; // es el paso de avance sobre la curva cuanto mas chico mayor es el detalle
+        var deltaU=1.; // es el paso de avance sobre la curva cuanto mas chico mayor es el detalle
         // u=0.05 son 20 segmentos (0.05=1/20)
         var primer_punto;
+        
+        var min_x = 100.;
+        var max_x = 0.;
+        var min_z = 100.;
+        var max_z = 0.;
         //tamanio = puntosDeControl.lenght();
         for(n=0;n<tamanio/3;n++)
             {
@@ -97,7 +102,12 @@
             tramo.push(puntosDeControl[n*3 + 2]);
             if (puntosDeControl[n*3 + 2])
                 for (var u=0;u<1.001;u=u+deltaU){
-                    resultado.push(curvaCuadraticaBspline(u,tramo));
+                    punto = curvaCuadraticaBspline(u,tramo);
+                    resultado.push(punto);
+                    if (punto.x < min_x)    min_x = punto.x;
+                    if (punto.x > max_x)    max_x = punto.x;
+                    if (punto.z < min_z)    min_z = punto.z;
+                    if (punto.z > max_z)    max_z = punto.z;
 
                     if (!primer_punto)
                     //guardo el primero
@@ -107,6 +117,19 @@
             }
         //el ultimo tiene que ser igual al primero
         resultado.push(primero);
+        // inserto el centro en el ultimo lugar
+        //aca me quede
+        
+        var punto={
+            "x":0.,
+            "y":0.,
+            "z":0.
+          }				
+        punto.x=(max_x - min_x)/2.+ min_x;
+		punto.y=0.;
+		punto.z=((max_z - min_z)/2.) + min_z;
+        resultado.push(punto);
+        
         //console.log(resultado);
         return resultado;
     }
