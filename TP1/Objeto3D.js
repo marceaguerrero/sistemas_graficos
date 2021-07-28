@@ -203,23 +203,24 @@ class Objeto3D {
 
                 if (tipo == 'losa')
                 {
-                var centro={
+                //no lo estoy usando
+                /*var centro={
                     "x":0.,
                     "y":0.,
                     "z":0.
                     }		
                 centro = losa[losa.length-1];
                 console.log(centro);
-    
+                */
                 vertices = losa;
                 //le saco el centro
                 vertices.pop();
                 //a partir de 4 dibuja bien el borde
-                filas = 4;
+                //filas = 4;
                 console.log(vertices);
                 for (j=0; j<filas; j++){
                     //si lo multiplico por j tiene altura
-                    y = 1.0;
+                    y = 0.1*j;
                     matrizNivel = crearRecorridoLosa(0., y, 0.);
                     translado = vec3.create();
                     translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
@@ -253,29 +254,63 @@ class Objeto3D {
                         uvBuffer.push(u);
                     }
                 }
-                //ahora dibujo la tapa, todos los vertices para el centro
-                var tapa=[];
-                //tapa = losa;
-                matrizNivel = crearRecorridoLosa(centro.x, centro.y, centro.z);
-                translado = vec3.create();
-                translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
-                console.log(translado);
-                for (i=0; i< vertices.length; i++){
-                    var punto={
-                        "x":0.,
-                        "y":0.,
-                        "z":0.
-                        }		
-                    punto.x = (vertices[i].x - translado[0])/2. + translado[0];
-                    punto.y = (vertices[i].y - translado[1])/2. + translado[1];
-                    punto.z = (vertices[i].z - translado[2])/2. + translado[2];
-                    tapa.push(vertices[i]);
-                    tapa.push(punto);
+                console.log(positionBuffer);
+                columnas = vertices.length;
                 }
+               if (tipo == 'tapa')
+               {
+               var punto={
+                    "x":0.,
+                    "y":0.,
+                    "z":0.
+                    }		
+                var cant=0;
+                for (i=0; i< vertices.length; i++){
+                    punto.x+=vertices[i].x;
+                    punto.y+=vertices[i].y;
+                    punto.z+=vertices[i].z;
+                    cant++;
+                }
+                punto.x=punto.x/cant;
+                punto.y=punto.y/cant;
+                punto.z=punto.z/cant;
+
+                //  lleno el buffer de posiciones de la tapa
+                for (i=0; i< vertices.length; i++){
+                    positionBuffer.push(punto.x);
+                    positionBuffer.push(punto.y);
+                    positionBuffer.push(punto.z);
+                    positionBuffer.push(vertices[i].x);
+                    positionBuffer.push(vertices[i].y);
+                    positionBuffer.push(vertices[i].z);
+
+                    var u=j/columnas;
+                    var v=i/filas;
+                    var nrm=this.getNormal(u,v);
+                    normalBuffer.push(nrm[0]);
+                    normalBuffer.push(nrm[1]);
+                    normalBuffer.push(nrm[2]);
+                    normalBuffer.push(nrm[0]);
+                    normalBuffer.push(nrm[1]);
+                    normalBuffer.push(nrm[2]);
+                    var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
+                    uvBuffer.push(uvs[0]);
+                    uvBuffer.push(0.2);
+                    uvBuffer.push(uvs[1]);
+                    uvBuffer.push(uvs[0]);
+                    uvBuffer.push(0.2);
+                    uvBuffer.push(uvs[1]);
+                    var u = (i / (filas - 1));
+                    var v = (j / (columnas - 1));
+                    uvBuffer.push(v);
+                    uvBuffer.push(u);
+                    uvBuffer.push(v);
+                    uvBuffer.push(u);
+            }
+                console.log(punto);
+                console.log(positionBuffer);
                 
-                console.log(tapa);
-                filas = 4;
-                columnas = tapa.length;
+                columnas = vertices.length;
 
             }
 

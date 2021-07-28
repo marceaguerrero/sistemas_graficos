@@ -177,15 +177,19 @@ function crearGeometriaEdificio(){
     //obtengo la bspline cuadratica con esos vertices ruidosos
     var bspline = [];
     bspline = devuelvoCurvaBspline(pto_ruido, 14);
-    //console.log(bspline);
-    //construyo la losa con esos vertices
     losa_piso1 = new Objeto3D(2,2);
-    losa_piso1.initBuffers(4, 2,'losa', bspline);
+    losa_piso1.initBuffers(4, 4,'losa', bspline);
     losa_piso1.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
-    losa_piso1.setPosicion(-6.,0.,9.0);
+    losa_piso1.setPosicion(-5.5,0.,9.);
     losa_piso1.setEscala(0.45,0.6,0.45);
-    //losa_piso1.setPosicion(10.,10.,10.);
     piso1.agregarHijo(losa_piso1);
+    tapa1_losa_piso1 = new Objeto3D(3,3);
+    tapa1_losa_piso1.initBuffers(2, 2,'tapa');
+    losa_piso1.agregarHijo(tapa1_losa_piso1);
+    tapa2_losa_piso1 = new Objeto3D(3,3);
+    tapa2_losa_piso1.initBuffers(2, 2,'tapa');
+    tapa2_losa_piso1.setPosicion(0.,0.3,0.);
+    losa_piso1.agregarHijo(tapa2_losa_piso1);
 
     //ascensor
     ascen1_piso1 = new Objeto3D(1,1);
@@ -301,17 +305,23 @@ function crearGeometriaEdificio(){
 
     //obtengo la bspline cuadratica con esos vertices ruidosos
     var bspline = [];
-    bspline = devuelvoCurvaBspline(pto_ruido, 12);
+    bspline = devuelvoCurvaBspline(pto_ruido, 10);
     
-    //console.log(bspline);
     //construyo la losa con esos vertices
     losa_piso2 = new Objeto3D(2,2);
-    losa_piso2.initBuffers(4, 2,'losa', bspline);
+    losa_piso2.initBuffers(2, 2,'losa', bspline);
     losa_piso2.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
-    losa_piso2.setPosicion(-6.,0.,9.0);
+    losa_piso2.setPosicion(-5.5,0.,9.5);
     losa_piso2.setEscala(0.45,0.6,0.45);
     //losa_piso1.setPosicion(10.,10.,10.);
     piso2.agregarHijo(losa_piso2);
+    tapa1_losa_piso2 = new Objeto3D(3,3);
+    tapa1_losa_piso2.initBuffers(2, 2,'tapa');
+    losa_piso2.agregarHijo(tapa1_losa_piso2);
+    tapa2_losa_piso2 = new Objeto3D(3,3);
+    tapa2_losa_piso2.initBuffers(2, 2,'tapa');
+    tapa2_losa_piso2.setPosicion(0.,0.1,0.);
+    losa_piso2.agregarHijo(tapa2_losa_piso2);
 
     //ascensor
     ascen1_piso2 = new Objeto3D(1,1);
