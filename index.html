@@ -1,29 +1,435 @@
-<html>
-  <body>
-  <h1>Ejercicios de Sistemas Gráficos</h1>
-  <p>Semana 2</p>
-  <a href=".\demoLetras3D\exercise1.html"> Letras 3D Ejercicio 1</a>
-  <br></br>
-  <a href=".\demoLetras3D\exercise2.html"> Letras 3D Ejercicio 2</a>
-  <br></br>
-  <a href=".\ejercicioSistemaSolar\sistemaSolar.html"> Sistema Solar </a>
-  <br></br>
-  <p>Semana 3</p>
-  <a href=".\demoPlanetaTierra\index_ejercicio1.html"> Planeta Tierra Ejercicio 1 </a>
-  <br></br>
-  <a href=".\demoPlanetaTierra\index_ejercicio2.html"> Planeta Tierra Ejercicio 2 </a>
-  <br></br>
-  <a href=".\demoPlanetaTierra\index_ejercicio3.html"> Planeta Tierra Ejercicio 3 </a>
-  <br></br>
-  <a href=".\demoPlanetaTierra\index_ejercicio4.html"> Planeta Tierra Ejercicio 4 </a>
-  <br></br>
-  <p>Semana 4</p>
-  <a href=".\demoGrillaNxM\index.html"> Tubo Senoidal </a>
-  <p>Semana 5</p>
-  <a href=".\demoMapeoUV\cubo.html"> Mapeo UV</a>
+<!doctype html>
+<head>
+    <script src="js/jquery.js"></script>
+    <script src="js/gl-matrix-3.3.0.js"></script>
+    <script src="js/webgl-utils.js"></script>
+    <script src="js/dat.gui.js"></script>
+    <script src="js/droneCamera.js"></script>
+    <script src="modulo-geometria.js"></script>
+    <script src="modulo-curvas.js"></script>
+    <script src="modulo-estructura.js"></script>
+    <script src="perlin-noise.js"></script>
+    <script src="Objeto3D.js"></script>
+    <style>
+        html{
+            height: 100%;
+        }
+        body{
+            padding: 0;
+            margin: 0;
+            height: 100%;;
+        }
 
-  <p>TP 1</p>
-  <a href=".\TP1\index.html"> Trabajo Practico 1</a>
+        #myCanvas{
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
 
-  </body>
+</head>
+
+<body>
+
+    <canvas id="myCanvas" >
+        Your browser does not support the HTML5 canvas element.
+    </canvas>
+
+
+    <script>
+
+        var vertexShaderFile="vertex-shader.glsl";
+        var modo="edges"; // wireframe, smooth, edges
+        var shaderProgram;
+        var time=0;
+
+        var gl;
+        var mat4=glMatrix.mat4;
+        var mat3=glMatrix.mat3;
+        var vec3=glMatrix.vec3;
+        var vec4=glMatrix.vec4;
+
+        var matrizProyeccion = mat4.create();
+        var matrizVista = mat4.create();
+
+        var $canvas=$("#myCanvas");
+        var aspect=$canvas.width()/$canvas.height();
+
+        //menu
+        var distanciaCamara=5.00;
+        var alturaCamara=-1.6;
+        var alturaGrua=0.7;
+        var valorGrua = 0.7;
+        var rotarCabina=0.;
+        var rotoGruaAnt = 0.;
+        var alturaCable=0.1;
+        var valorCable = 0.1;
+        var anchoVidrio = 3.;
+        var valorAnchoVidrio = 3.;
+        var altoVidrio = 3.;
+        var valorAltoVidrio = 3.;
+        var pisosTramo1 = 3.;
+        var pisosTramo2 = 3.;
+        var generarEdificio = false;
+
+        var lighting="true";
+        var vertexShaderSource;
+        var fragmentShaderSource;
+
+        var drone = new DroneCameraControl([0,2,5]);
+
+        var glTextures = {};
+
+        function initGL(canvas) {
+
+            try {
+                gl = canvas.getContext("webgl");
+                gl.canvas.width=$canvas.width();
+                gl.canvas.height=$canvas.height();
+            } catch (e) {
+                console.error(e);
+            }
+            if (!gl) {
+                alert("Could not initialise WebGL, sorry :-(");
+            }
+        }
+
+        function loadShaders(){
+
+            $.when(loadVS(), loadFS()).done(function(res1,res2){
+                //this code is executed when all ajax calls are done
+                webGLStart();
+            });
+
+            function loadVS() {
+                return  $.ajax({
+                    url: "shaders/"+vertexShaderFile,
+                    success: function(result){
+                        vertexShaderSource=result;
+                    }
+                });
+            }
+
+            function loadFS() {
+                return  $.ajax({
+                    url: "shaders/fragment-shader.glsl",
+                    success: function(result){
+                        fragmentShaderSource=result;
+                    }
+                });
+            }
+        }
+
+        function getShader(gl,code,type) {
+
+            var shader;
+
+            if (type == "fragment")
+                shader = gl.createShader(gl.FRAGMENT_SHADER);
+            else // "vertex"
+                shader = gl.createShader(gl.VERTEX_SHADER);
+
+            gl.shaderSource(shader, code);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        }
+
+        function onResize(){
+            gl.canvas.width=$canvas.width();
+            gl.canvas.height=$canvas.height();
+            aspect=$canvas.width()/$canvas.height();
+        }
+
+        function getShaderSource(url) {
+            var req = new XMLHttpRequest();
+            req.open("GET", url, false);
+            req.send(null);
+            return (req.status == 200) ? req.responseText : null;
+        };
+
+        function initTextures(){
+            //empiezo con el pasto
+            gl.useProgram(pastoShader);
+            loadTextures("texturas/pasto.jpg", "pasto");
+
+            var location = gl.getUniformLocation(pastoShader, "pasto");
+            gl.uniform1i(location, 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, glTextures["pasto"]);
+
+        }
+
+        function loadTextures(path, string) {
+            var texture = gl.createTexture();
+            var image = new Image();
+
+            image.onload = function() {
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
+            image.src = path;
+            texture.image = image;
+            glTextures[string] = texture;
+        }
+
+
+        function initPastoShaders() {
+
+            var fragmentShader= getShader(gl, vertexShaderSource,"pasto-vertex");
+            var vertexShader= getShader(gl, fragmentShaderSource,"pasto-fragment");
+
+            pastoShader = gl.createProgram();
+            gl.attachShader(pastoShader, vertexShader);
+            gl.attachShader(pastoShader, fragmentShader);
+            gl.linkProgram(pastoShader);
+
+            if (!gl.getProgramParameter(pastoShader, gl.LINK_STATUS)) {
+                alert("Could not initialise shaders");
+            }
+
+            gl.useProgram(pastoShader);
+
+            pastoShader.vertexPositionAttribute = gl.getAttribLocation(pastoShader, "aPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            pastoShader.textureCoordAttribute = gl.getAttribLocation(pastoShader, "aUv");
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+            pastoShader.vertexNormalAttribute = gl.getAttribLocation(pastoShader, "aNormal");
+            gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+            pastoShader.pMatrixUniform = gl.getUniformLocation(pastoShader, "uPMatrix");
+            pastoShader.mMatrixUniform = gl.getUniformLocation(pastoShader, "uMMatrix");
+            pastoShader.vMatrixUniform = gl.getUniformLocation(pastoShader, "uVMatrix");
+            pastoShader.nMatrixUniform = gl.getUniformLocation(pastoShader, "uNMatrix");
+            pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler");
+            pastoShader.useLightingUniform = gl.getUniformLocation(pastoShader, "uUseLighting");
+            pastoShader.ambientColorUniform = gl.getUniformLocation(pastoShader, "uAmbientColor");
+            pastoShader.frameUniform = gl.getUniformLocation(pastoShader, "time");
+            pastoShader.lightingDirectionUniform = gl.getUniformLocation(pastoShader, "uLightPosition");
+            pastoShader.directionalColorUniform = gl.getUniformLocation(pastoShader, "uDirectionalColor");
+            }
+
+
+        function initShaders() {
+
+            var fragmentShader= getShader(gl, vertexShaderSource,"vertex");
+            var vertexShader= getShader(gl, fragmentShaderSource,"fragment");
+
+            shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                alert("Could not initialise shaders");
+            }
+
+            gl.useProgram(shaderProgram);
+
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aUv");
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+            shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aNormal");
+            gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+            shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, "uMMatrix");
+            shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "uVMatrix");
+            shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
+            shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+            shaderProgram.useLightingUniform = gl.getUniformLocation(shaderProgram, "uUseLighting");
+            shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
+            shaderProgram.frameUniform = gl.getUniformLocation(shaderProgram, "time");
+            shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightPosition");
+            shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
+        }
+
+        function drawScene() {
+
+            // Se configura el viewport dentro del "canvas".
+            // En este caso se utiliza toda el área disponible
+            gl.viewport(0, 0, $canvas.width(), $canvas.height());
+
+            // Se habilita el color de borrado para la pantalla (Color Buffer) y otros buffers
+            gl.clearColor(0.0,0.0,0.0,1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            // Se configura la matriz de proyección
+            mat4.identity(matrizProyeccion);
+            mat4.perspective(matrizProyeccion, 30, aspect, 0.1, 100.0);
+            mat4.scale(matrizProyeccion,matrizProyeccion,[1,-1,1]); // parche para hacer un flip de Y, parece haber un bug en glmatrix
+
+            // Se inicializan las variables asociadas con la Iluminación
+            gl.uniform1f(shaderProgram.frameUniform, time/10.0 );
+            gl.uniform3f(shaderProgram.ambientColorUniform, 0.6, 0.6, 0.6 );
+            //gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
+            gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
+
+            //document.addEventListener("keyup",function(e){
+            matrizVista = drone.getViewMatrix();
+            //});
+            /*
+            document.addEventListener("keydown",function(e){
+            // Definimos la ubicación de la camara
+                mat4.lookAt(matrizVista,
+                    vec3.fromValues(0,alturaCamara,distanciaCamara),
+                    vec3.fromValues(0,0,0),
+                    vec3.fromValues(0,1,0)
+                );
+            });
+*/
+
+            $(document).keypress(function(e) {
+                var keyCode = e.keyCode;
+
+                if(keyCode == 9) //es el menos
+                    {
+                    console.log("You pressed W!");
+                    }
+                    
+            });
+
+            var lightPosition = [10.0,0.0, 3.0];
+            gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
+
+            //losa_piso1.draw();
+            dibujarGeometria();
+
+        }
+
+        function dibujarGeometria(){
+
+
+            grua_A1.draw();
+            for (i=0; i<Math.trunc(pisosTramo1); i++){
+                piso1.setPosicion(0.,i*1.,0.);
+                piso1.draw();}
+            for (i=0; i<Math.trunc(pisosTramo2); i++){
+                piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
+                piso2.draw();}    
+            tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
+            tapa_edif.draw();
+
+            //tobogan.draw();
+            /*
+            for (i=0; i<3; i++){
+                //primer tramo
+                tobogan.setPosicion(4.- (i/2)*0.9,3.+ (i/2) ,12.- i*0.5);
+                if(i=0){
+                    tobogan_inv.setPosicion(-2. + (i*1.5),-2.2, 3.+ i);
+                    tobogan_inv.setRotacion(Math.PI/2, 0.,Math.PI/2);}
+            
+                //tobogan_sub.setPosicion(0.,-3.,0.5);
+                tobogan.draw();}
+            */             
+                
+
+            for (i=0; i<15; i++){
+                pasto.setPosicion(-7+i,0.,-8.);
+                pasto.draw();
+            }
+        }
+
+        function tick() {
+            requestAnimFrame(tick);
+            time+=1/60;
+            //controles para la grua
+            if (alturaGrua!=valorGrua)
+                {   if (alturaGrua - valorGrua <0)
+                        expandirGrua(valorGrua);
+                    else
+                        expandirGrua(alturaGrua);
+                    valorGrua = alturaGrua;}
+
+            if (Math.trunc(rotoGruaAnt)!=Math.trunc(rotarCabina))
+            {   rotoGruaAnt = Math.trunc(rotarCabina);
+                rotarCabina = Math.trunc(rotarCabina)*Math.PI/2;
+                rotacionCabina(rotarCabina);}
+
+            if (alturaCable!=valorCable)
+                {   if (alturaCable - valorCable <0)
+                        expandirCable(alturaCable);
+                    else
+                        expandirCable(valorCable);
+                    valorCable = alturaCable;}
+
+            if (anchoVidrio!=valorAnchoVidrio)
+                {
+                    valorAnchoVidrio = anchoVidrio;
+                    cambiarVentanas(anchoVidrio, altoVidrio);
+                }                    
+
+            if (altoVidrio!=valorAltoVidrio)
+            {
+                valorAltoVidrio = altoVidrio;
+                cambiarVentanas(anchoVidrio, altoVidrio);
+            }                    
+
+            drone.update();
+            drawScene();
+        }
+
+        function initMenu(){
+            var gui = new dat.GUI();
+            var props = [];
+            props.generarEdificio = function() {drawScene();      };       
+            gui.add(window, "distanciaCamara",0.01,5).step(0.01);
+            gui.add(window, "alturaCamara",-2,2).step(0.01);
+            gui.add(window, "modo",["wireframe","smooth","edges"]);
+            gui.add(window, "alturaGrua",-1.,0.7).step(0.01);
+            gui.add(window, "rotarCabina",0.,4.).step(0.01);
+            gui.add(window, "pisosTramo1",3.,10.).step(0.01);
+            gui.add(window, "pisosTramo2",3.,10.).step(0.01);
+            //no anda las funciones asi que no lo muestro
+            //gui.add(window, "alturaCable",0.1,0.35).step(0.01);
+            gui.add(window, "anchoVidrio",3.,4.).step(0.01);
+            gui.add(window, "altoVidrio",3.,4.).step(0.01);
+            //no hace falta tocarlo
+            gui.add(props, 'generarEdificio').name('Generar Estructura');
+
+        }
+
+        function webGLStart() {
+            var canvas = document.getElementById("myCanvas");
+            initGL(canvas);
+            initShaders();
+            initPastoShaders();
+            initTextures();
+
+            crearGeometriaGrua();
+            crearGeometriaEdificio();
+            //crearGeometriaTobogan();
+            crearGeometriaPasto();
+
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.enable(gl.DEPTH_TEST);
+
+            $(window).on("resize",onResize);
+            initMenu();
+            tick();
+        }
+
+        // cuando el documento HTML esta completo, iniciamos la aplicación
+        $(document).ready(function(){        
+            loadShaders();
+        })
+
+    </script>
+
+</body>
 </html>
