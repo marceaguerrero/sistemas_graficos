@@ -78,6 +78,8 @@
 
         var drone = new DroneCameraControl([0,2,5]);
 
+        var glTextures = {};
+
         function initGL(canvas) {
 
             try {
@@ -149,6 +151,77 @@
             req.send(null);
             return (req.status == 200) ? req.responseText : null;
         };
+
+        function initTextures(){
+
+            //empiezo con el pasto
+            gl.useProgram(pastoShader);
+            loadTextures("texturas/pasto.jpg", "pasto");
+
+            var location = gl.getUniformLocation(pastoShader, "pasto");
+            gl.uniform1i(location, 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, glTextures["pasto"]);
+
+        }
+
+        function loadTextures(path, string) {
+            var texture = gl.createTexture();
+            var image = new Image();
+
+            image.onload = function() {
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
+            image.src = path;
+            texture.image = image;
+            glTextures[string] = texture;
+        }
+
+
+        function initPastoShaders() {
+
+            var fragmentShader= getShader(gl, vertexShaderSource,"pasto-vertex");
+            var vertexShader= getShader(gl, fragmentShaderSource,"pasto-fragment");
+
+            pastoShader = gl.createProgram();
+            gl.attachShader(pastoShader, vertexShader);
+            gl.attachShader(pastoShader, fragmentShader);
+            gl.linkProgram(pastoShader);
+
+            if (!gl.getProgramParameter(pastoShader, gl.LINK_STATUS)) {
+                alert("Could not initialise shaders");
+            }
+
+            gl.useProgram(pastoShader);
+
+            pastoShader.vertexPositionAttribute = gl.getAttribLocation(pastoShader, "aPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            pastoShader.textureCoordAttribute = gl.getAttribLocation(pastoShader, "aUv");
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+            pastoShader.vertexNormalAttribute = gl.getAttribLocation(pastoShader, "aNormal");
+            gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+            pastoShader.pMatrixUniform = gl.getUniformLocation(pastoShader, "uPMatrix");
+            pastoShader.mMatrixUniform = gl.getUniformLocation(pastoShader, "uMMatrix");
+            pastoShader.vMatrixUniform = gl.getUniformLocation(pastoShader, "uVMatrix");
+            pastoShader.nMatrixUniform = gl.getUniformLocation(pastoShader, "uNMatrix");
+            pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler");
+            pastoShader.useLightingUniform = gl.getUniformLocation(pastoShader, "uUseLighting");
+            pastoShader.ambientColorUniform = gl.getUniformLocation(pastoShader, "uAmbientColor");
+            pastoShader.frameUniform = gl.getUniformLocation(pastoShader, "time");
+            pastoShader.lightingDirectionUniform = gl.getUniformLocation(pastoShader, "uLightPosition");
+            pastoShader.directionalColorUniform = gl.getUniformLocation(pastoShader, "uDirectionalColor");
+            }
+
 
         function initShaders() {
 
@@ -250,7 +323,10 @@
             for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
                 piso2.draw();}    
-            tobogan.draw();
+            tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
+            tapa_edif.draw();
+
+            //tobogan.draw();
             /*
             for (i=0; i<3; i++){
                 //primer tramo
@@ -263,6 +339,7 @@
                 tobogan.draw();}
             */             
                 
+
             for (i=0; i<15; i++){
                 pasto.setPosicion(-7+i,0.,-8.);
                 pasto.draw();
@@ -332,10 +409,12 @@
             var canvas = document.getElementById("myCanvas");
             initGL(canvas);
             initShaders();
+            initPastoShaders();
+            initTextures();
 
             crearGeometriaGrua();
             crearGeometriaEdificio();
-            crearGeometriaTobogan();
+            //crearGeometriaTobogan();
             crearGeometriaPasto();
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -347,7 +426,7 @@
         }
 
         // cuando el documento HTML esta completo, iniciamos la aplicación
-        $(document).ready(function(){
+        $(document).ready(function(){        
             loadShaders();
         })
 

@@ -3,53 +3,39 @@ function crearGeometriaPasto(){
     pasto.initBuffers(30, 30,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);
+    pasto.setShader(pastoShader);
 }
 
 function crearGeometriaTobogan(){
     vert_tob = [];
-//    esta opcion me queda mas aplanada en la parte central
-//    vert_tob.push([0.0, 0.0, 1.0]);
-//    vert_tob.push([0.0, 0.0, 2.0]);
-//    vert_tob.push([0.0, 0.0, 3.0]);
-//    vert_tob.push([1.0, 0.0, 4.0]);
-//    vert_tob.push([2.0, 0.0, 4.0]);
-//    vert_tob.push([4.0, 0.0, 3.0]);
-//    vert_tob.push([4.0, 0.0, 2.0]);
-//    vert_tob.push([4.0, 0.0, 1.0]);
 
-    vert_tob.push([0.0, 0.0, 1.0]);
-    vert_tob.push([0.0, 0.0, 2.0]);
-    vert_tob.push([1.0, 0.0, 3.0]);
-    vert_tob.push([2.0, 0.0, 4.0]);
+    vert_tob.push([-1.0, 0.0, -1.0]);
+    vert_tob.push([0.0, 0.0, -1.0]);
+    vert_tob.push([1.0, 0.0, 0.0]);
+    vert_tob.push([2.0, 0.0, 1.0]);
+    vert_tob.push([3.0, 0.0, 2.0]);
     vert_tob.push([3.0, 0.0, 4.0]);
-    vert_tob.push([4.0, 0.0, 3.0]);
-    vert_tob.push([5.0, 0.0, 2.0]);
-    vert_tob.push([5.0, 0.0, 1.0]);
+    vert_tob.push([4.0, 0.0, 5.0]);
 
     //obtengo la bezier cubica con esos vertices
     var bezier= [];
-    //SI AUMENTO EL SEGUNDO PARAMETRO SALE MAS LARGA LA ESTRUCTURA
-    bezier = devuelvoCurvaBezier(vert_tob, 8);
+    //SI AUMENTO EL SEGUNDO PARAMETRO SALE MAS TIPO SONRISA
+    bezier = devuelvoCurvaBezier(vert_tob, 10);
 
-    tobogan = new Objeto3D(1,1);
-    tobogan.initBuffers(1, 1,'tobogan', bezier);
+    tobogan = new Objeto3D(2,2);
+    tobogan.initBuffers(2, 2,'tobogan', bezier);
     tobogan.setPosicion(5.,3.,12.);
-    tobogan.setRotacion(0., Math.PI/2,0.);
-    tobogan.setEscala(0.6,0.6,0.6);
+    tobogan.setEscala(0.1,1.,0.1);
+    //asi queda en el piso
 
-    tobogan_inv = new Objeto3D(1,1);
-    tobogan_inv.initBuffers(1, 1,'tobogan', bezier);
-    tobogan_inv.setPosicion(5.5,4.,1.5);
-    tobogan_inv.setRotacion(0., Math.PI*7/6,Math.PI);
-    tobogan_inv.setEscala(1.,1.,1.);
-    tobogan.agregarHijo(tobogan_inv);
-
-    tobogan_sub = new Objeto3D(1,1);
-    tobogan_sub.initBuffers(1, 1,'tobogan', bezier);
-    tobogan_sub.setPosicion(0.,1.,2.);
-    tobogan_sub.setRotacion(0., -Math.PI*11/4,Math.PI/2);
-    tobogan_sub.setEscala(0.6,0.6,0.6);
-    tobogan.agregarHijo(tobogan_sub);
+    tobogan_inc = new Objeto3D(2,2);
+    tobogan_inc.initBuffers(2, 2,'tobogan', bezier);
+    //tobogan_inc.setPosicion(5.,3.,12.);
+    //tobogan_inc.setEscala(0.1,1.,0.1);
+    //asi queda en el piso
+    tobogan.setRotacion(0.,Math.PI/2,Math.PI*5/4,0.);
+    tobogan.agregarHijo(tobogan_inc);
+    tobogan_inc.setRotacion(0.,Math.PI/2,Math.PI/2,Math.PI*5/4);
 
 }
 
@@ -191,6 +177,45 @@ function crearGeometriaEdificio(){
     tapa2_losa_piso1.setPosicion(0.,0.3,0.);
     losa_piso1.agregarHijo(tapa2_losa_piso1);
 
+    //columnas
+    //saco el punto medio para ubicar la columna
+    var punto={
+        "x":0.,
+        "y":0.,
+        "z":0.
+        }		
+    var cant=0;
+    for (i=0; i< bspline.length; i++){
+        punto.x+=bspline[i].x;
+        punto.y+=bspline[i].y;
+        punto.z+=bspline[i].z;
+        cant++;
+    }
+    punto.x=punto.x/cant;
+    punto.y=punto.y/cant;
+    punto.z=punto.z/cant;
+
+    losa_piso1_col1 = new Objeto3D(8,8);
+    losa_piso1_col1.initBuffers(11, 16,'circulo');
+    losa_piso1_col1.setPosicion(punto.x+2.4, punto.y-2.7, punto.z+2.4);
+    losa_piso1_col1.setEscala(0.2,0.18,0.2);
+    losa_piso1.agregarHijo(losa_piso1_col1);
+    losa_piso1_col2 = new Objeto3D(8,8);
+    losa_piso1_col2.initBuffers(11, 16,'circulo');
+    losa_piso1_col2.setPosicion(punto.x-1.4, punto.y-2.7, punto.z-1.4);
+    losa_piso1_col2.setEscala(0.2,0.18,0.2);
+    losa_piso1.agregarHijo(losa_piso1_col2);
+    losa_piso1_col3 = new Objeto3D(8,8);
+    losa_piso1_col3.initBuffers(11, 16,'circulo');
+    losa_piso1_col3.setPosicion(punto.x+2.4, punto.y-2.7, punto.z-1.4);
+    losa_piso1_col3.setEscala(0.2,0.18,0.2);
+    losa_piso1.agregarHijo(losa_piso1_col3);
+    losa_piso1_col4 = new Objeto3D(8,8);
+    losa_piso1_col4.initBuffers(11, 16,'circulo');
+    losa_piso1_col4.setPosicion(punto.x-1.4, punto.y-2.7, punto.z+2.4);
+    losa_piso1_col4.setEscala(0.2,0.18,0.2);
+    losa_piso1.agregarHijo(losa_piso1_col4);
+
     //ascensor
     ascen1_piso1 = new Objeto3D(1,1);
     ascen1_piso1.initBuffers(2, 2,'cuadrado');
@@ -311,7 +336,7 @@ function crearGeometriaEdificio(){
     losa_piso2 = new Objeto3D(2,2);
     losa_piso2.initBuffers(2, 2,'losa', bspline);
     losa_piso2.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
-    losa_piso2.setPosicion(-5.5,0.,9.5);
+    losa_piso2.setPosicion(-5.5,0.,9.);
     losa_piso2.setEscala(0.45,0.6,0.45);
     //losa_piso1.setPosicion(10.,10.,10.);
     piso2.agregarHijo(losa_piso2);
@@ -322,6 +347,45 @@ function crearGeometriaEdificio(){
     tapa2_losa_piso2.initBuffers(2, 2,'tapa');
     tapa2_losa_piso2.setPosicion(0.,0.1,0.);
     losa_piso2.agregarHijo(tapa2_losa_piso2);
+
+        //columnas
+    //saco el punto medio para ubicar la columna
+    var punto={
+        "x":0.,
+        "y":0.,
+        "z":0.
+        }		
+    var cant=0;
+    for (i=0; i< bspline.length; i++){
+        punto.x+=bspline[i].x;
+        punto.y+=bspline[i].y;
+        punto.z+=bspline[i].z;
+        cant++;
+    }
+    punto.x=punto.x/cant;
+    punto.y=punto.y/cant;
+    punto.z=punto.z/cant;
+
+    losa_piso2_col1 = new Objeto3D(8,8);
+    losa_piso2_col1.initBuffers(11, 16,'circulo');
+    losa_piso2_col1.setPosicion(punto.x+2., punto.y-2.7, punto.z+2.3);
+    losa_piso2_col1.setEscala(0.2,0.18,0.2);
+    losa_piso2.agregarHijo(losa_piso2_col1);
+    losa_piso2_col2 = new Objeto3D(8,8);
+    losa_piso2_col2.initBuffers(11, 16,'circulo');
+    losa_piso2_col2.setPosicion(punto.x-1., punto.y-2.7, punto.z-1.3);
+    losa_piso2_col2.setEscala(0.2,0.18,0.2);
+    losa_piso2.agregarHijo(losa_piso2_col2);
+    losa_piso2_col3 = new Objeto3D(8,8);
+    losa_piso2_col3.initBuffers(11, 16,'circulo');
+    losa_piso2_col3.setPosicion(punto.x+2., punto.y-2.7, punto.z-1.);
+    losa_piso2_col3.setEscala(0.2,0.18,0.2);
+    losa_piso2.agregarHijo(losa_piso2_col3);
+    losa_piso2_col4 = new Objeto3D(8,8);
+    losa_piso2_col4.initBuffers(11, 16,'circulo');
+    losa_piso2_col4.setPosicion(punto.x-2., punto.y-2.7, punto.z+2.);
+    losa_piso2_col4.setEscala(0.2,0.18,0.2);
+    losa_piso2.agregarHijo(losa_piso2_col4);
 
     //ascensor
     ascen1_piso2 = new Objeto3D(1,1);
@@ -343,6 +407,22 @@ function crearGeometriaEdificio(){
     ascen4_piso2.setPosicion(1.,0.,-1.);
     piso2.agregarHijo(ascen1_piso2);
     
+
+    //tapa final del edificio
+    tapa_edif = new Objeto3D(2,2);
+    tapa_edif.initBuffers(2, 2,'losa', bspline);
+    tapa_edif.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
+    tapa_edif.setPosicion(-5.5,6.,9.);
+    tapa_edif.setEscala(0.45,0.6,0.45);
+    //losa_piso1.setPosicion(10.,10.,10.);
+    //piso2.agregarHijo(losa_piso2);
+    tapa1_tapa_edif = new Objeto3D(3,3);
+    tapa1_tapa_edif.initBuffers(2, 2,'tapa');
+    tapa_edif.agregarHijo(tapa1_tapa_edif);
+    tapa2_tapa_edif = new Objeto3D(3,3);
+    tapa2_tapa_edif.initBuffers(2, 2,'tapa');
+    tapa2_tapa_edif.setPosicion(0.,0.1,0.);
+    tapa_edif.agregarHijo(tapa2_tapa_edif);
 
 }
 
