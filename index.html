@@ -186,12 +186,12 @@
 
         function initPastoShaders() {
 
-            var fragmentShader= getShader(gl, vertexShaderSource,"pasto-vertex");
-            var vertexShader= getShader(gl, fragmentShaderSource,"pasto-fragment");
+            var PastofragmentShader= getShader(gl, vertexShaderSource,"pasto-vertex");
+            var PastovertexShader= getShader(gl, fragmentShaderSource,"pasto-fragment");
 
             pastoShader = gl.createProgram();
-            gl.attachShader(pastoShader, vertexShader);
-            gl.attachShader(pastoShader, fragmentShader);
+            gl.attachShader(pastoShader, PastovertexShader);
+            gl.attachShader(pastoShader, PastofragmentShader);
             gl.linkProgram(pastoShader);
 
             if (!gl.getProgramParameter(pastoShader, gl.LINK_STATUS)) {
