@@ -31,17 +31,12 @@
         
         const float PI=3.141592653;
 
-        vec3 FragPos;
-
-        vec3 position;
-
         void main(void) {
                     
-            position = aPosition;		
+            vec3 position = aPosition;		
             vec3 normal = aNormal;	
             vec2 uv = aUv;
-
-                                  	
+                                   	
            vec4 textureColor = texture2D(uSampler, vec2(uv.s, uv.t));         
             
             // **************** EDITAR A PARTIR DE AQUI *******************************
@@ -53,8 +48,6 @@
             vec4 worldPos = uMMatrix*vec4(position, 1.0);                        
 
             gl_Position = uPMatrix*uVMatrix*worldPos;
-            FragPos = vec3(uMMatrix * vec4(position, 1.0));
-
 
             vWorldPosition=worldPos.xyz;              
             vNormal=normalize(uNMatrix * aNormal);

@@ -3,7 +3,6 @@ function crearGeometriaPasto(){
     pasto.initBuffers(30, 30,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);
-    pasto.setShader(pastoShader);
 }
 
 function crearGeometriaTobogan(){

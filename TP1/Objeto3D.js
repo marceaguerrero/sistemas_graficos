@@ -71,11 +71,6 @@ class Objeto3D {
             return [1.0/filas * i,1.0/columnas * j];
         }
 
-        this.setShader=function(shader) {
-            this.shader = shader;
-            gl.useProgram(shader);
-        }
-
         this.setMatrixUniforms=function() {
             gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, this.matrizModelado);
             gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, matrizVista);
@@ -208,11 +203,21 @@ class Objeto3D {
 
                 if (tipo == 'losa')
                 {
+                //no lo estoy usando
+                /*var centro={
+                    "x":0.,
+                    "y":0.,
+                    "z":0.
+                    }		
+                centro = losa[losa.length-1];
+                console.log(centro);
+                */
                 vertices = losa;
                 //le saco el centro
                 vertices.pop();
                 //a partir de 4 dibuja bien el borde
                 //filas = 4;
+                //console.log(vertices);
                 for (j=0; j<filas; j++){
                     //si lo multiplico por j tiene altura
                     y = 0.1*j;
@@ -249,6 +254,7 @@ class Objeto3D {
                         uvBuffer.push(u);
                     }
                 }
+                //console.log(positionBuffer);
                 columnas = vertices.length;
                 }
                if (tipo == 'tapa')
@@ -300,22 +306,22 @@ class Objeto3D {
                     uvBuffer.push(u);
                     uvBuffer.push(v);
                     uvBuffer.push(u);
-            }             
+            }
+                //console.log(punto);
+                //console.log(positionBuffer);
+                
                 columnas = vertices.length;
 
             }
 
-            
                 if (tipo == 'tobogan')
                 {vertices = losa;
                 //uso tantos niveles como vertices
                 //filas = vertices.length;
-                //filas = 2;
+                filas = 2;
                 for (j=0; j<filas; j++){
                     y = j*1.0;
-                    x = 0.;
-                    z = 0.;
-                    matrizNivel = crearRecorridoLosa(x, y, z);
+                    matrizNivel = crearRecorridoCuadrado(y, y, y);
                     translado = vec3.create();
                     translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
                     //guardo en el position buffer los vertices
@@ -422,15 +428,28 @@ class Objeto3D {
                     // Se configuran los buffers que alimentaron el pipeline
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
                     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
                     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
                     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
-
+                    
+                            // Specify the texture to map onto the faces.
+                    gl.useProgram(shaderProgram);
+       
+                    // Tell WebGL we want to affect texture unit 0
+                    gl.activeTexture(gl.TEXTURE0);
+                    // Bind the texture to texture unit 0
+                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                    // Tell the shader we bound the texture to texture unit 0
+                    gl.uniform1i(shaderProgram.samplerUniform, 0);
+                                            
                     if (modo!="wireframe"){
                         gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
                         gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
@@ -441,6 +460,8 @@ class Objeto3D {
                         gl.drawElements(gl.LINE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
                     }
                 }
+
+
                 for (var i=0;i<this.hijos.length;i++){
                     //le mando la matriz de modelado del padre
                     this.hijos[i].draw(this.matrizModelado);}
