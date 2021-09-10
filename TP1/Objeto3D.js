@@ -99,6 +99,7 @@ class Objeto3D {
                     var translado;
                     translado = vec3.create();
                     translado = vec3.fromValues(matrizNivel[12],matrizNivel[13],matrizNivel[14]);
+
                     //guardo en el position buffer los vertices
                     for (i=0; i< vertices.length; i++){
                         var pos = vec3.create();
@@ -116,12 +117,9 @@ class Objeto3D {
                         normalBuffer.push(nrm[2]);
                         var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
                         uvBuffer.push(uvs[0]);
-                        uvBuffer.push(0.2);
                         uvBuffer.push(uvs[1]);
-                        var u = (i / (filas - 1));
-                        var v = (j / (columnas - 1));
-                        uvBuffer.push(v);
-                        uvBuffer.push(u);
+                        //console.log(uvBuffer, normalBuffer, positionBuffer)
+
                     }
                 }
                 }
@@ -246,12 +244,12 @@ class Objeto3D {
                         normalBuffer.push(nrm[2]);
                         var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
                         uvBuffer.push(uvs[0]);
-                        uvBuffer.push(0.2);
+                        //uvBuffer.push(0.2);
                         uvBuffer.push(uvs[1]);
-                        var u = (i / (filas - 1));
-                        var v = (j / (columnas - 1));
-                        uvBuffer.push(v);
-                        uvBuffer.push(u);
+                        //var u = (i / (filas - 1));
+                        //var v = (j / (columnas - 1));
+                        //uvBuffer.push(v);
+                        //uvBuffer.push(u);
                     }
                 }
                 //console.log(positionBuffer);
@@ -295,17 +293,17 @@ class Objeto3D {
                     normalBuffer.push(nrm[2]);
                     var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
                     uvBuffer.push(uvs[0]);
-                    uvBuffer.push(0.2);
+                    //uvBuffer.push(0.2);
                     uvBuffer.push(uvs[1]);
                     uvBuffer.push(uvs[0]);
-                    uvBuffer.push(0.2);
+                    //uvBuffer.push(0.2);
                     uvBuffer.push(uvs[1]);
-                    var u = (i / (filas - 1));
-                    var v = (j / (columnas - 1));
-                    uvBuffer.push(v);
-                    uvBuffer.push(u);
-                    uvBuffer.push(v);
-                    uvBuffer.push(u);
+                    //var u = (i / (filas - 1));
+                    //var v = (j / (columnas - 1));
+                    //uvBuffer.push(v);
+                    //uvBuffer.push(u);
+                    //uvBuffer.push(v);
+                    //uvBuffer.push(u);
             }
                 //console.log(punto);
                 //console.log(positionBuffer);
@@ -347,12 +345,12 @@ class Objeto3D {
                         normalBuffer.push(nrm[2]);
                         var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
                         uvBuffer.push(uvs[0]);
-                        uvBuffer.push(0.2);
+                        //uvBuffer.push(0.2);
                         uvBuffer.push(uvs[1]);
-                        var u = (i / (filas - 1));
-                        var v = (j / (columnas - 1));
-                        uvBuffer.push(v);
-                        uvBuffer.push(u);
+                        //var u = (i / (filas - 1));
+                        //var v = (j / (columnas - 1));
+                        //uvBuffer.push(v);
+                        //uvBuffer.push(u);
                     }
                 }
                 //filas = 4;
@@ -361,16 +359,20 @@ class Objeto3D {
 
             // Buffer de indices de los triangulos
             //indexBuffer=[];
+                
             for (var i=0;i<filas-1;i++){
                     indexBuffer.push(i*columnas);
+                    indexBuffer.push(i*columnas + 1);//
                     for (var j=0;j<columnas-1;j++){
                         indexBuffer.push(i*columnas+j);
                         indexBuffer.push((i+1)*columnas+j);
                         indexBuffer.push(i*columnas+j+1);
                         indexBuffer.push((i+1)*columnas+j+1);
                     }
+                    indexBuffer.push((i+1)*columnas+columnas-2);//
                     indexBuffer.push((i+1)*columnas+columnas-1);
             }
+            //console.log(indexBuffer)
 
         // Creación e Inicialización de los buffers a nivel de OpenGL
             this.webgl_normal_buffer = gl.createBuffer();
@@ -413,7 +415,7 @@ class Objeto3D {
 
         }
 
-        this.draw = function(matPadre){
+        this.draw = function(matPadre, texture){
                 this.actualizarMatrizModelado();
                 // concatenamos las transformaciones padre/hijo
                 if(matPadre){
@@ -428,28 +430,30 @@ class Objeto3D {
                     // Se configuran los buffers que alimentaron el pipeline
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
                     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
+                    //gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);   
+    
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
                     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+                    //gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
                     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+                    //gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
-                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
                     
                             // Specify the texture to map onto the faces.
-                    gl.useProgram(shaderProgram);
+                    //gl.useProgram(shaderProgram);
        
                     // Tell WebGL we want to affect texture unit 0
                     gl.activeTexture(gl.TEXTURE0);
                     // Bind the texture to texture unit 0
                     gl.bindTexture(gl.TEXTURE_2D, texture);
                     // Tell the shader we bound the texture to texture unit 0
-                    gl.uniform1i(shaderProgram.samplerUniform, 0);
-                                            
+                    //gl.uniform1i(shaderProgram.samplerUniform, 0);
+                    gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
+                    
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
+                    
                     if (modo!="wireframe"){
                         gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
                         gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
@@ -464,7 +468,7 @@ class Objeto3D {
 
                 for (var i=0;i<this.hijos.length;i++){
                     //le mando la matriz de modelado del padre
-                    this.hijos[i].draw(this.matrizModelado);}
+                    this.hijos[i].draw(this.matrizModelado, texture);}
         }
 
     }

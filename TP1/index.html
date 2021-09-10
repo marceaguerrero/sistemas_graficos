@@ -72,6 +72,8 @@
         var pisosTramo2 = 3.;
         var generarEdificio = false;
 
+        var cantTextures = 1;
+
         var lighting="true";
         var vertexShaderSource;
         var fragmentShaderSource;
@@ -79,8 +81,9 @@
         var drone = new DroneCameraControl([0,2,5]);
 
         var glTextures = {};
-        var imagenTextura = ["columnas", "grua", "losa", "madera", "pasto"];
+        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg"];
         var TEXTURES = [];
+        var texture;
         //const texture;// = gl.createTexture();
 
         function initGL(canvas) {
@@ -101,7 +104,10 @@
 
             $.when(loadVS(), loadFS()).done(function(res1,res2){
                 //this code is executed when all ajax calls are done
-                webGLStart();
+                //aca iria init texture y luego webglstart
+                webGLStart1();
+                console.log('termino webglstart1');
+                initTextures();
             });
 
             function loadVS() {
@@ -194,35 +200,48 @@
         }
 
         function initTextures(){
-            texture = loadTexture("textures/columnas.jpg");
-            //loadTexture("textures/grua.jpg", imagenTextura[1]);
-            //loadTexture("textures/losa.jpg", imagenTextura[2]);
-            //loadTexture("textures/madera.jpg", imagenTextura[3]);
-            //loadTexture("textures/pasto.jpg", imagenTextura[4]);
+            //textureColumna = loadTexture("textures/columnas.jpg");
+            textureColumna = loadTexture(imagenTextura[0]);
+            textureGrua = loadTexture(imagenTextura[1]);
+            textureLosa = loadTexture(imagenTextura[2]);
+            textureMadera = loadTexture(imagenTextura[3]);
+            texturePasto = loadTexture(imagenTextura[4]);
+            console.log('termino de cargar las texturas');
+            webGLStart2();
+
             }
 
-            function loadTexture(path) {
-                //esto va aca?
-                gl.useProgram(shaderProgram);
+        function loadTexture(path) {
 
-                var texture = gl.createTexture();
-                var image = new Image();
+            var texture = gl.createTexture();
+            var image = new Image();
 
-                image.onload = function() {
-                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-                    gl.generateMipmap(gl.TEXTURE_2D);
-                }
-                image.src = path;
-                texture.image = image;
-                //agrega la textura a glTextures
-                return texture;
-                }
+            image.onload = function() {
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+                gl.generateMipmap(gl.TEXTURE_2D);
+                //gl.bindTexture(gl.TEXTURE_2D, null);
+                /*
+                if (cantTextures > 1)
+                    {   console.log('faltan cargar ' + cantTextures);
+                        cantTextures --;}
+                else
+                    {   
+                        console.log('termino de cargar las texturas');
+                        webGLStart2();
+                    }
+                */
+            }
+            image.src = path;
+            texture.image = image;
+            //agrega la textura a glTextures
+            return texture;
+            }
 
             function isPowerOf2(value) {
                 return (value & (value - 1)) == 0;
@@ -246,7 +265,7 @@
             // Se inicializan las variables asociadas con la Iluminación
             gl.uniform1f(shaderProgram.frameUniform, time/10.0 );
             gl.uniform3f(shaderProgram.ambientColorUniform, 0.6, 0.6, 0.6 );
-            //gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
+            gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
             gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
             //document.addEventListener("keyup",function(e){
@@ -282,17 +301,22 @@
         }
 
         function dibujarGeometria(){
-
-
-            grua_A1.draw();
+            /*
+            0 textureColumna;
+            1 textureGrua ;
+            2 textureLosa ;
+            3 textureMadera;
+            4 texturePasto ;
+            */
+            grua_A1.draw(null, textureGrua);
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
-                piso1.draw();}
+                piso1.draw(null, textureColumna);}
             for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
-                piso2.draw();}    
+                piso2.draw(null, textureMadera);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
-            tapa_edif.draw();
+            tapa_edif.draw(null, textureLosa);
 
             //tobogan.draw();
             /*
@@ -307,9 +331,9 @@
                 tobogan.draw();}
             */             
                 
-            for (i=0; i<15; i++){
+            for (i=0; i<1; i++){
                 pasto.setPosicion(-7+i,0.,-8.);
-                pasto.draw();
+                pasto.draw(null, texturePasto);
             }
         }
 
@@ -349,7 +373,6 @@
             }                    
 
             drone.update();
-            initTextures();
             drawScene();
         }
 
@@ -369,9 +392,12 @@
 
         }
 
-        function webGLStart() {
+        function webGLStart1() {
             var canvas = document.getElementById("myCanvas");
             initGL(canvas);
+        }
+        function webGLStart2() {
+            console.log('ingreso a Webglstart2');
             initShaders();
 
             crearGeometriaGrua();
@@ -383,7 +409,7 @@
             gl.enable(gl.DEPTH_TEST);
 
             $(window).on("resize",onResize);
-            initMenu();
+            initMenu();            
             tick();
         }
 
