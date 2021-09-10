@@ -1,11 +1,9 @@
 function crearGeometriaPasto(){
-    console.log('empiezo con el pasto')
     pasto = new Objeto3D(1,1);
     pasto.initBuffers(2, 2,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);
-    console.log('termino con el pasto')
-
+    
 }
 
 function crearGeometriaTobogan(){
