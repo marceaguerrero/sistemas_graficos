@@ -1,16 +1,22 @@
 <!doctype html>
 <head>
-    <script src="js/jquery.js"></script>
-    <script src="js/gl-matrix-3.3.0.js"></script>
-    <script src="js/webgl-utils.js"></script>
-    <script src="js/dat.gui.js"></script>
-    <script src="js/droneCamera.js"></script>
-    <script src="modulo-geometria.js"></script>
-    <script src="modulo-curvas.js"></script>
-    <script src="modulo-estructura.js"></script>
-    <script src="perlin-noise.js"></script>
-    <script src="Objeto3D.js"></script>
-    <style>
+    <script src="js/otros/jquery.js"></script>
+    <script src="js/otros/gl-matrix-3.3.0.js"></script>
+    <script src="js/otros/webgl-utils.js"></script>
+    <script src="js/otros/dat.gui.js"></script>
+    <script src="js/otros/jquery.mousewheel.min.js"></script>
+
+    <script src="js/camaras/camaraControl.js"></script>
+    <script src="js/camaras/droneCamera.js"></script>
+    <script src="js/camaras/orbitalCamera.js"></script>
+
+    <script src="js/estructuras/modulo-geometria.js"></script>
+    <script src="js/estructuras/modulo-curvas.js"></script>
+    <script src="js/estructuras/modulo-estructura.js"></script>
+    <script src="js/estructuras/perlin-noise.js"></script>
+    <script src="js/estructuras/Objeto3D.js"></script>
+
+<style>
         html{
             height: 100%;
         }
@@ -56,8 +62,8 @@
         var aspect=$canvas.width()/$canvas.height();
 
         //menu
-        var distanciaCamara=5.00;
-        var alturaCamara=-1.6;
+        //var distanciaCamara=5.00;
+        //var alturaCamara=-1.6;
         var alturaGrua=0.7;
         var valorGrua = 0.7;
         var rotarCabina=0.;
@@ -78,7 +84,9 @@
         var vertexShaderSource;
         var fragmentShaderSource;
 
-        var drone = new DroneCameraControl([0,2,5]);
+        var camara;
+        //var drone = new DroneCameraControl([0,2,5]);
+        //la camara la defino luego de initGl porque preciso el canvas
 
         var glTextures = {};
         var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg"];
@@ -106,7 +114,7 @@
                 //this code is executed when all ajax calls are done
                 //aca iria init texture y luego webglstart
                 webGLStart1();
-                console.log('termino webglstart1');
+                //console.log('termino webglstart1');
                 initTextures();
             });
 
@@ -206,7 +214,7 @@
             textureLosa = loadTexture(imagenTextura[2]);
             textureMadera = loadTexture(imagenTextura[3]);
             texturePasto = loadTexture(imagenTextura[4]);
-            console.log('termino de cargar las texturas');
+            //console.log('termino de cargar las texturas');
             webGLStart2();
 
             }
@@ -269,7 +277,9 @@
             gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
             //document.addEventListener("keyup",function(e){
-            matrizVista = drone.getViewMatrix();
+            //matrizVista = drone.getViewMatrix();
+            matrizVista = camara.getViewMatrix();
+
             //});
             /*
             document.addEventListener("keydown",function(e){
@@ -281,16 +291,6 @@
                 );
             });
 */
-
-            $(document).keypress(function(e) {
-                var keyCode = e.keyCode;
-
-                if(keyCode == 9) //es el menos
-                    {
-                    console.log("You pressed W!");
-                    }
-                    
-            });
 
             var lightPosition = [10.0,0.0, 3.0];
             gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
@@ -374,14 +374,13 @@
                 cambiarVentanas(anchoVidrio, altoVidrio);
             }                    
 
-            drone.update();
+            camara._addEventListeners();
+            //drone.update();
             drawScene();
         }
 
         function initMenu(){
             var gui = new dat.GUI();
-            gui.add(window, "distanciaCamara",0.01,5).step(0.01);
-            gui.add(window, "alturaCamara",-2,2).step(0.01);
             gui.add(window, "modo",["wireframe","smooth","edges"]);
             gui.add(window, "alturaGrua",-1.,0.7).step(0.01);
             gui.add(window, "rotarCabina",0.,4.).step(0.01);
@@ -397,9 +396,11 @@
         function webGLStart1() {
             var canvas = document.getElementById("myCanvas");
             initGL(canvas);
+            camara = new CameraControl([0,2,5], canvas);
+
         }
         function webGLStart2() {
-            console.log('ingreso a Webglstart2');
+            //console.log('ingreso a Webglstart2');
             initShaders();
 
             crearGeometriaGrua();
