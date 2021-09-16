@@ -1,4 +1,4 @@
-function OrbitalCameraControl(canvas){
+function OrbitalCameraControl(){
 
 	 var previousClientX = 0;
 	 var previousClientY = 0;
@@ -17,7 +17,6 @@ function OrbitalCameraControl(canvas){
 	 position = [0, 0, -0];
 	 up_vector = [0, 1, 0];
 	 target = [0, 0.5, 0];
-	 this.canvas = canvas;
  
 	 this.getViewMatrix=function(){
 		 return viewMatrix;
@@ -27,10 +26,10 @@ function OrbitalCameraControl(canvas){
 		 return position;
 	   }
  
-	this.setEventListeners=function(canvas) {
+	this.setEventListeners=function() {
 		window.onkeydown = (event) => {
 		  if (event.keyCode == 57) {
-				radio = factorVelocidad;
+				radio -= factorVelocidad;
 				this.update();
 				}
 		
@@ -40,22 +39,26 @@ function OrbitalCameraControl(canvas){
 			}
 			};
 
-		this.canvas.addEventListener('mousedown', function(event){	
+		body = document.getElementsByTagName('body')[0]
+		body.addEventListener('mousedown', function(event){	
 		 //this.canvas.onmousedown(function(event){		
 			 isMouseDown = true; 
-			 upd_some_values();
+			 //upd_some_values();
 			 //this.update();	
 			});
  
-		this.canvas.addEventListener('mouseup', function(event){	
+		body.addEventListener('mouseup', function(event){	
 		 //this.canvas.onmouseup(function(event){
 			 isMouseDown = false;		
+			 //upd_some_values();
 				 });
  
-		this.canvas.addEventListener('mousemove', function(event){	
+		body.addEventListener('mousemove', function(event){	
 		 //this.canvas.onmousemove(function(event){ 
 			 mouse.x = event.clientX || event.pageX; 
-			 mouse.y = event.clientY || event.pageY 
+			 mouse.y = event.clientY || event.pageY ;
+			 upd_some_values();
+			 //console.log(mouse.x, mouse.y);
 			 });
 			}
 

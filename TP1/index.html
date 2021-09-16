@@ -6,7 +6,6 @@
     <script src="js/otros/dat.gui.js"></script>
     <script src="js/otros/jquery.mousewheel.min.js"></script>
 
-    <script src="js/camaras/camaraControl.js"></script>
     <script src="js/camaras/droneCamera.js"></script>
     <script src="js/camaras/orbitalCamera.js"></script>
 
@@ -44,9 +43,9 @@
 
     <script>
 
-        var vertexShaderFile="vertex-shader.glsl";
         var modo="edges"; // wireframe, smooth, edges
         var shaderProgram;
+        var pastoShader;
         var time=0;
 
         var gl;
@@ -83,10 +82,13 @@
         var lighting="true";
         var vertexShaderSource;
         var fragmentShaderSource;
+        var tierraVertexShaderSource;
+        var tierraFragmentShaderSource;
 
-        var camara;
-        //var drone = new DroneCameraControl([0,2,5]);
-        //la camara la defino luego de initGl porque preciso el canvas
+        var current_cam = 1; //1 es drone, 2 es orbital
+        var drone = new DroneCameraControl([0,2,5]);
+        var orbital = new OrbitalCameraControl();
+        orbital.setEventListeners();
 
         var glTextures = {};
         var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg"];
@@ -110,7 +112,7 @@
 
         function loadShaders(){
 
-            $.when(loadVS(), loadFS()).done(function(res1,res2){
+            $.when(loadVS(), loadVS2(), loadFS(), loadFS2()).done(function(res1,res2, res3, res4){
                 //this code is executed when all ajax calls are done
                 //aca iria init texture y luego webglstart
                 webGLStart1();
@@ -120,9 +122,18 @@
 
             function loadVS() {
                 return  $.ajax({
-                    url: "shaders/"+vertexShaderFile,
+                    url: "shaders/vertex-shader.glsl",
                     success: function(result){
                         vertexShaderSource=result;
+                    }
+                });
+            }
+
+            function loadVS2() {
+                return  $.ajax({
+                    url: "shaders/tierra-vertex-shader.glsl",
+                    success: function(result){
+                        tierraVertexShaderSource=result;
                     }
                 });
             }
@@ -135,6 +146,16 @@
                     }
                 });
             }
+
+            function loadFS2() {
+                return  $.ajax({
+                    url: "shaders/tierra-fragment-shader.glsl",
+                    success: function(result){
+                        tierraFragmentShaderSource=result;
+                    }
+                });
+            }
+
         }
 
         function getShader(gl,code,type) {
@@ -150,7 +171,7 @@
             gl.compileShader(shader);
 
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.error(gl.getShaderInfoLog(shader));
+                console.log('Error en la compilación del shader: ', gl.getShaderInfoLog(shader));
                 return null;
             }
             return shader;
@@ -169,8 +190,9 @@
             return (req.status == 200) ? req.responseText : null;
         };
 
-        function initShaders() {
+        function initShaders(vs, fs) {
 
+            //Shader de texturas
             var fragmentShader= getShader(gl, vertexShaderSource,"vertex");
             var vertexShader= getShader(gl, fragmentShaderSource,"fragment");
 
@@ -183,7 +205,6 @@
                 alert("Could not initialise shaders");
             }
 
-            //en el ejemplo no lo tiene aca - ira?
             gl.useProgram(shaderProgram);
 
             shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aPosition");
@@ -205,6 +226,43 @@
             shaderProgram.frameUniform = gl.getUniformLocation(shaderProgram, "time");
             shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightPosition");
             shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
+
+            //Shader de pasto
+            /*
+            var pasto_fragmentShader= getShader(gl, tierraVertexShaderSource,"vertex");
+            var pasto_vertexShader= getShader(gl, tierraFragmentShaderSource,"fragment");
+
+            pastoShader = gl.createProgram();
+            gl.attachShader(pastoShader, pasto_vertexShader);
+            gl.attachShader(pastoShader, pasto_fragmentShader);
+            gl.linkProgram(pastoShader);
+
+            if (!gl.getProgramParameter(pastoShader, gl.LINK_STATUS)) {
+                alert("Could not initialise shaders");
+            }
+
+            gl.useProgram(pastoShader);
+
+            pastoShader.vertexPositionAttribute = gl.getAttribLocation(pastoShader, "aPosition");
+            gl.enableVertexAttribArray(pastoShader.vertexPositionAttribute);
+
+            pastoShader.textureCoordAttribute = gl.getAttribLocation(pastoShader, "aUv");
+            gl.enableVertexAttribArray(pastoShader.textureCoordAttribute);
+
+            pastoShader.vertexNormalAttribute = gl.getAttribLocation(pastoShader, "aNormal");
+            gl.enableVertexAttribArray(pastoShader.vertexNormalAttribute);
+
+            pastoShader.pMatrixUniform = gl.getUniformLocation(pastoShader, "uPMatrix");
+            pastoShader.mMatrixUniform = gl.getUniformLocation(pastoShader, "uMMatrix");
+            pastoShader.vMatrixUniform = gl.getUniformLocation(pastoShader, "uVMatrix");
+            pastoShader.nMatrixUniform = gl.getUniformLocation(pastoShader, "uNMatrix");
+            pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler");
+            pastoShader.useLightingUniform = gl.getUniformLocation(pastoShader, "uUseLighting");
+            pastoShader.ambientColorUniform = gl.getUniformLocation(pastoShader, "uAmbientColor");
+            pastoShader.frameUniform = gl.getUniformLocation(pastoShader, "time");
+            pastoShader.lightingDirectionUniform = gl.getUniformLocation(pastoShader, "uLightPosition");
+            pastoShader.directionalColorUniform = gl.getUniformLocation(pastoShader, "uDirectionalColor");
+*/
         }
 
         function initTextures(){
@@ -276,26 +334,26 @@
             gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
             gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
-            //document.addEventListener("keyup",function(e){
-            //matrizVista = drone.getViewMatrix();
-            matrizVista = camara.getViewMatrix();
-
-            //});
             /*
-            document.addEventListener("keydown",function(e){
-            // Definimos la ubicación de la camara
-                mat4.lookAt(matrizVista,
-                    vec3.fromValues(0,alturaCamara,distanciaCamara),
-                    vec3.fromValues(0,0,0),
-                    vec3.fromValues(0,1,0)
-                );
-            });
-*/
+            gl.uniform1f(pastoShader.frameUniform, time/10.0 );
+            gl.uniform3f(pastoShader.ambientColorUniform, 0.6, 0.6, 0.6 );
+            gl.uniform3f(pastoShader.directionalColorUniform, 1., 0., 0.);
+            gl.uniform1i(pastoShader.useLightingUniform,(lighting=="true"));
+            */
+            if (current_cam ==1 )
+                {
+                viewMatrix = drone.getViewMatrix();
+                drone.update();}
+            else
+                {
+                viewMatrix = orbital.getViewMatrix();
+                orbital.setEventListeners(gl.canvas);
+                orbital.update();}
 
             var lightPosition = [10.0,0.0, 3.0];
             gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
+            //gl.uniform3fv(pastoShader.lightingDirectionUniform, lightPosition);
 
-            //losa_piso1.draw();
             dibujarGeometria();
 
         }
@@ -308,6 +366,7 @@
             3 textureMadera;
             4 texturePasto ;
             */
+           
             grua_G1.draw(null, textureMadera);
             grua_A1.draw(null, textureGrua);
             for (i=0; i<Math.trunc(pisosTramo1); i++){
@@ -318,7 +377,7 @@
                 piso2.draw(null, textureMadera);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
             tapa_edif.draw(null, textureLosa);
-
+                
             //tobogan.draw();
             /*
             for (i=0; i<3; i++){
@@ -335,7 +394,7 @@
             for (i=0; i<20; i++){
                 for (m=0;m<30;m++){
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
-                    pasto.draw(null, texturePasto);}
+                    pasto.draw(null, texturePasto, "pasto");}
             }
         }
 
@@ -374,8 +433,30 @@
                 cambiarVentanas(anchoVidrio, altoVidrio);
             }                    
 
-            camara._addEventListeners();
-            //drone.update();
+            window.addEventListener("keydown", (event) => {
+                if (event.keyCode == 49) {
+                // 1 para la Drone
+                    current_cam = 1;
+                    matrizVista = drone.getViewMatrix();
+                    drone.update();}
+                if (event.keyCode == 50) {
+                // 2 para la Orbital
+                    current_cam = 2;
+                    matrizVista = orbital.getViewMatrix();
+                    //poner cuando lo inicio
+                    //orbital.setEventListeners(gl.canvas);
+                    orbital.update();}
+            })
+            
+            if (current_cam == 1) {
+                matrizVista = drone.getViewMatrix();
+                drone.update();}
+            else {
+                // 2 para la Orbital
+                matrizVista = orbital.getViewMatrix();
+                //orbital.setEventListeners(gl.canvas);
+                orbital.update();}
+
             drawScene();
         }
 
@@ -396,12 +477,12 @@
         function webGLStart1() {
             var canvas = document.getElementById("myCanvas");
             initGL(canvas);
-            camara = new CameraControl([0,2,5], canvas);
+            //camara = new CameraControl([0,2,5], canvas);
 
         }
         function webGLStart2() {
             //console.log('ingreso a Webglstart2');
-            initShaders();
+            initShaders("vertex","fragment");
 
             crearGeometriaGrua();
             crearGeometriaEdificio();
