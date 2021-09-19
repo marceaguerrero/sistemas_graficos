@@ -362,12 +362,18 @@
             4 texturePasto ;
             */
            
-           
-            grua_A1.draw(null);
+            for (i=0; i<20; i++){
+                for (m=0;m<30;m++){
+                    pasto.setPosicion(-10.+i,0.,-9.+ m);
+                    pasto.draw(null);}
+                }           
+            grua_A1.draw(null);          
             /*
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
                 piso1.draw(null, textureColumna);}
+              */
+            /*             
             for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
                 piso2.draw(null, textureMadera);}    
@@ -388,11 +394,7 @@
                 tobogan.draw();}
             */             
             
-            for (i=0; i<20; i++){
-                for (m=0;m<30;m++){
-                    pasto.setPosicion(-10.+i,0.,-9.+ m);
-                    pasto.draw(null);}
-            }
+            
         }
 
         function tick() {

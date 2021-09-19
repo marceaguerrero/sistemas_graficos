@@ -47,13 +47,19 @@ function crearGeometriaEdificio(){
     piso1 = new Objeto3D();
     piso1.setAncho(2);
     piso1.setLargo(2);
-    piso1.setTextura('textureColumna');
+    piso1.setTextura(textureLosa);
+    piso1.setShader(shaderProgram);
+
     edif_vent1 = new Objeto3D();
     edif_vent1.setAncho(2);
     edif_vent1.setLargo(2);
     edif_vent1.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent1.setPosicion(0., 0., 15.);
     rect_invi.push([0.0, 0.0, 13.]);
+
+    edif_vent1.setTextura(textureColumna);
+    edif_vent1.setShader(colorShader);
+
     edif_vent2 = new Objeto3D();
     edif_vent2.setAncho(2);
     edif_vent2.setLargo(2);
@@ -61,6 +67,10 @@ function crearGeometriaEdificio(){
     edif_vent1.agregarHijo(edif_vent2);
     edif_vent2.setPosicion(1., 0., 0.);
     rect_invi.push([1.0, 0.0, 13.]);
+
+    edif_vent2.setTextura(textureColumna);
+    edif_vent2.setShader(colorShader);
+
     edif_vent3 = new Objeto3D();
     edif_vent3.setAncho(2);
     edif_vent3.setLargo(2);
@@ -68,6 +78,10 @@ function crearGeometriaEdificio(){
     edif_vent1.agregarHijo(edif_vent3);
     edif_vent3.setPosicion(2., 0., 0.);
     rect_invi.push([2.0, 0.0, 13.]);
+
+    edif_vent3.setTextura(textureColumna);
+    edif_vent3.setShader(colorShader);
+
     //giro para el otro lado
     edif_vent8 = new Objeto3D();
     edif_vent8.setAncho(2);
@@ -77,6 +91,10 @@ function crearGeometriaEdificio(){
     edif_vent8.setPosicion(1.,0.,0.);
     edif_vent8.setRotacion(0.,0.,Math.PI/2);
     rect_invi.push([5.0, 0.0, 15.]);
+
+    edif_vent8.setTextura(textureColumna);
+    edif_vent8.setShader(colorShader);
+
     edif_vent9 = new Objeto3D();
     edif_vent9.setAncho(2);
     edif_vent9.setLargo(2);
@@ -84,6 +102,10 @@ function crearGeometriaEdificio(){
     edif_vent8.agregarHijo(edif_vent9);
     edif_vent9.setPosicion(1., 0., 0.);
     rect_invi.push([5.0, 0.0, 16.]);
+
+    edif_vent9.setTextura(textureColumna);
+    edif_vent9.setShader(colorShader);
+
     edif_vent10 = new Objeto3D();
     edif_vent10.setAncho(2);
     edif_vent10.setLargo(2);
@@ -91,6 +113,10 @@ function crearGeometriaEdificio(){
     edif_vent8.agregarHijo(edif_vent10);
     edif_vent10.setPosicion(2., 0., 0.);
     rect_invi.push([5.0, 0.0, 17.]);
+
+    edif_vent10.setTextura(textureColumna);
+    edif_vent10.setShader(colorShader);
+
     edif_vent11 = new Objeto3D();
     edif_vent11.setAncho(2);
     edif_vent11.setLargo(2);
@@ -98,6 +124,10 @@ function crearGeometriaEdificio(){
     edif_vent8.agregarHijo(edif_vent11);
     edif_vent11.setPosicion(3., 0., 0.);
     rect_invi.push([5.0, 0.0, 18.]);
+
+    edif_vent11.setTextura(textureColumna);
+    edif_vent11.setShader(colorShader);
+
     //cierro las ventanas
     edif_vent12 = new Objeto3D();
     edif_vent12.setAncho(2);
@@ -106,12 +136,20 @@ function crearGeometriaEdificio(){
     edif_vent12.setRotacion(0.,0.,Math.PI/2);
     edif_vent12.setPosicion(1.,0.,0.);
     edif_vent11.agregarHijo(edif_vent12);
+
+    edif_vent12.setTextura(textureColumna);
+    edif_vent12.setShader(colorShader);
+
     edif_vent13 = new Objeto3D();
     edif_vent13.setAncho(2);
     edif_vent13.setLargo(2);
     edif_vent13.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent12.agregarHijo(edif_vent13);
     edif_vent13.setPosicion(1., 0., 0.);
+
+    edif_vent13.setTextura(textureColumna);
+    edif_vent13.setShader(colorShader);
+
     edif_vent14 = new Objeto3D();
     edif_vent14.setAncho(2);
     edif_vent14.setLargo(2);
@@ -121,6 +159,10 @@ function crearGeometriaEdificio(){
     rect_invi.push([3.0, 0.0, 21.]);
     rect_invi.push([2.0, 0.0, 21.]);
     rect_invi.push([1.0, 0.0, 21.]);
+
+    edif_vent14.setTextura(textureColumna);
+    edif_vent14.setShader(colorShader);
+
     //giro
     edif_vent4 = new Objeto3D();
     edif_vent4.setAncho(2);
@@ -128,24 +170,40 @@ function crearGeometriaEdificio(){
     edif_vent4.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent1.agregarHijo(edif_vent4);
     edif_vent4.setRotacion(0.,0.,Math.PI/2);
+
+    edif_vent4.setTextura(textureColumna);
+    edif_vent4.setShader(colorShader);
+
     edif_vent5 = new Objeto3D();
     edif_vent5.setAncho(2);
     edif_vent5.setLargo(2);
     edif_vent5.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent4.agregarHijo(edif_vent5);
     edif_vent5.setPosicion(1., 0., 0.);
+
+    edif_vent5.setTextura(textureColumna);
+    edif_vent5.setShader(colorShader);
+
     edif_vent6 = new Objeto3D();
     edif_vent6.setAncho(2);
     edif_vent6.setLargo(2);
     edif_vent6.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent4.agregarHijo(edif_vent6);
     edif_vent6.setPosicion(2., 0., 0.);
+
+    edif_vent6.setTextura(textureColumna);
+    edif_vent6.setShader(colorShader);
+
     edif_vent7 = new Objeto3D();
     edif_vent7.setAncho(2);
     edif_vent7.setLargo(2);
     edif_vent7.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent4.agregarHijo(edif_vent7);
     edif_vent7.setPosicion(3., 0., 0.);
+
+    edif_vent7.setTextura(textureColumna);
+    edif_vent7.setShader(colorShader);
+
     rect_invi.push([-2.0, 0.0, 19.]);
     rect_invi.push([-2.0, 0.0, 18.]);
     rect_invi.push([-2.0, 0.0, 17.]);

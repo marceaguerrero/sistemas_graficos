@@ -84,6 +84,8 @@ class Objeto3D {
         }
 
         this.setMatrixUniforms=function() {
+            // esta linea es la del problema
+            gl.useProgram(this.shaderProgram);
 
             gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
             gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
@@ -438,7 +440,6 @@ class Objeto3D {
                 if (this.webgl_position_buffer && this.webgl_index_buffer){
                 // dibujamos la malla de triángulos con WebGL
                 // si el objeto tiene geometría asociada
-                    gl.useProgram(this.shaderProgram);
                     this.setMatrixUniforms();
 
                     // Se configuran los buffers que alimentaron el pipeline
@@ -456,7 +457,7 @@ class Objeto3D {
 
                     
                     // Specify the texture to map onto the faces.
-                    //gl.useProgram(shaderProgram);
+                    //gl.useProgram(this.shaderProgram);
        
                     // Tell WebGL we want to affect texture unit 0
                     gl.activeTexture(gl.TEXTURE0);
