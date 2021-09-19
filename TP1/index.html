@@ -45,7 +45,6 @@
 
         var modo="edges"; // wireframe, smooth, edges
         var shaderProgram;
-        var pastoShader;
         var time=0;
 
         var gl;
@@ -61,8 +60,6 @@
         var aspect=$canvas.width()/$canvas.height();
 
         //menu
-        //var distanciaCamara=5.00;
-        //var alturaCamara=-1.6;
         var alturaGrua=0.7;
         var valorGrua = 0.7;
         var rotarCabina=0.;
@@ -82,8 +79,8 @@
         var lighting="true";
         var vertexShaderSource;
         var fragmentShaderSource;
-        var tierraVertexShaderSource;
-        var tierraFragmentShaderSource;
+        var colorVertexShaderSource;
+        var colorFragmentShaderSource;
 
         var current_cam = 1; //1 es drone, 2 es orbital
         var drone = new DroneCameraControl([0,2,5]);
@@ -94,7 +91,6 @@
         var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg"];
         var TEXTURES = [];
         var texture;
-        //const texture;// = gl.createTexture();
 
         function initGL(canvas) {
 
@@ -131,9 +127,9 @@
 
             function loadVS2() {
                 return  $.ajax({
-                    url: "shaders/tierra-vertex-shader.glsl",
+                    url: "shaders/color-vertex-shader.glsl",
                     success: function(result){
-                        tierraVertexShaderSource=result;
+                        colorVertexShaderSource=result;
                     }
                 });
             }
@@ -149,9 +145,9 @@
 
             function loadFS2() {
                 return  $.ajax({
-                    url: "shaders/tierra-fragment-shader.glsl",
+                    url: "shaders/color-fragment-shader.glsl",
                     success: function(result){
-                        tierraFragmentShaderSource=result;
+                        colorFragmentShaderSource=result;
                     }
                 });
             }
@@ -206,7 +202,7 @@
             }
 
             gl.useProgram(shaderProgram);
-
+         
             shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aPosition");
             gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
@@ -227,42 +223,41 @@
             shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightPosition");
             shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
 
-            //Shader de pasto
-            /*
-            var pasto_fragmentShader= getShader(gl, tierraVertexShaderSource,"vertex");
-            var pasto_vertexShader= getShader(gl, tierraFragmentShaderSource,"fragment");
+            //Shader de color
+            
+            var color_fragmentShader= getShader(gl, colorVertexShaderSource,"vertex");
+            var color_vertexShader= getShader(gl, colorFragmentShaderSource,"fragment");
 
-            pastoShader = gl.createProgram();
-            gl.attachShader(pastoShader, pasto_vertexShader);
-            gl.attachShader(pastoShader, pasto_fragmentShader);
-            gl.linkProgram(pastoShader);
+            colorShader = gl.createProgram();
+            gl.attachShader(colorShader,color_vertexShader);
+            gl.attachShader(colorShader, color_fragmentShader);
+            gl.linkProgram(colorShader);
 
-            if (!gl.getProgramParameter(pastoShader, gl.LINK_STATUS)) {
+            if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
                 alert("Could not initialise shaders");
             }
 
-            gl.useProgram(pastoShader);
+            gl.useProgram(colorShader);
 
-            pastoShader.vertexPositionAttribute = gl.getAttribLocation(pastoShader, "aPosition");
-            gl.enableVertexAttribArray(pastoShader.vertexPositionAttribute);
+            colorShader.vertexPositionAttribute = gl.getAttribLocation(colorShader, "aPosition");
+            gl.enableVertexAttribArray(colorShader.vertexPositionAttribute);
 
-            pastoShader.textureCoordAttribute = gl.getAttribLocation(pastoShader, "aUv");
-            gl.enableVertexAttribArray(pastoShader.textureCoordAttribute);
+            colorShader.textureCoordAttribute = gl.getAttribLocation(colorShader, "aUv");
+            gl.enableVertexAttribArray(colorShader.textureCoordAttribute);
 
-            pastoShader.vertexNormalAttribute = gl.getAttribLocation(pastoShader, "aNormal");
-            gl.enableVertexAttribArray(pastoShader.vertexNormalAttribute);
+            colorShader.vertexNormalAttribute = gl.getAttribLocation(colorShader, "aNormal");
+            gl.enableVertexAttribArray(colorShader.vertexNormalAttribute);
 
-            pastoShader.pMatrixUniform = gl.getUniformLocation(pastoShader, "uPMatrix");
-            pastoShader.mMatrixUniform = gl.getUniformLocation(pastoShader, "uMMatrix");
-            pastoShader.vMatrixUniform = gl.getUniformLocation(pastoShader, "uVMatrix");
-            pastoShader.nMatrixUniform = gl.getUniformLocation(pastoShader, "uNMatrix");
-            pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler");
-            pastoShader.useLightingUniform = gl.getUniformLocation(pastoShader, "uUseLighting");
-            pastoShader.ambientColorUniform = gl.getUniformLocation(pastoShader, "uAmbientColor");
-            pastoShader.frameUniform = gl.getUniformLocation(pastoShader, "time");
-            pastoShader.lightingDirectionUniform = gl.getUniformLocation(pastoShader, "uLightPosition");
-            pastoShader.directionalColorUniform = gl.getUniformLocation(pastoShader, "uDirectionalColor");
-*/
+            colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
+            colorShader.mMatrixUniform = gl.getUniformLocation(colorShader, "uMMatrix");
+            colorShader.vMatrixUniform = gl.getUniformLocation(colorShader, "uVMatrix");
+            colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
+            colorShader.samplerUniform = gl.getUniformLocation(colorShader, "uSampler");
+            colorShader.useLightingUniform = gl.getUniformLocation(colorShader, "uUseLighting");
+            colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
+            colorShader.frameUniform = gl.getUniformLocation(colorShader, "time");
+            colorShader.lightingDirectionUniform = gl.getUniformLocation(colorShader, "uLightPosition");
+            colorShader.directionalColorUniform = gl.getUniformLocation(colorShader, "uDirectionalColor");
         }
 
         function initTextures(){
@@ -334,12 +329,12 @@
             gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
             gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
-            /*
-            gl.uniform1f(pastoShader.frameUniform, time/10.0 );
-            gl.uniform3f(pastoShader.ambientColorUniform, 0.6, 0.6, 0.6 );
-            gl.uniform3f(pastoShader.directionalColorUniform, 1., 0., 0.);
-            gl.uniform1i(pastoShader.useLightingUniform,(lighting=="true"));
-            */
+            gl.useProgram(colorShader);            
+            gl.uniform1f(colorShader.frameUniform, time/10.0 );
+            gl.uniform3f(colorShader.ambientColorUniform, 0.6, 0.6, 0.6 );
+            gl.uniform3f(colorShader.directionalColorUniform, 1., 0., 0.);
+            gl.uniform1i(colorShader.useLightingUniform,(lighting=="true"));
+            
             if (current_cam ==1 )
                 {
                 viewMatrix = drone.getViewMatrix();
@@ -352,7 +347,7 @@
 
             var lightPosition = [10.0,0.0, 3.0];
             gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
-            //gl.uniform3fv(pastoShader.lightingDirectionUniform, lightPosition);
+            gl.uniform3fv(colorShader.lightingDirectionUniform, lightPosition);
 
             dibujarGeometria();
 
@@ -367,8 +362,9 @@
             4 texturePasto ;
             */
            
-            grua_G1.draw(null, textureMadera);
-            grua_A1.draw(null, textureGrua);
+           
+            grua_A1.draw(null);
+            /*
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
                 piso1.draw(null, textureColumna);}
@@ -377,7 +373,8 @@
                 piso2.draw(null, textureMadera);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
             tapa_edif.draw(null, textureLosa);
-                
+              */
+
             //tobogan.draw();
             /*
             for (i=0; i<3; i++){
@@ -390,11 +387,11 @@
                 //tobogan_sub.setPosicion(0.,-3.,0.5);
                 tobogan.draw();}
             */             
-                
+            
             for (i=0; i<20; i++){
                 for (m=0;m<30;m++){
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
-                    pasto.draw(null, texturePasto, "pasto");}
+                    pasto.draw(null);}
             }
         }
 
@@ -477,17 +474,15 @@
         function webGLStart1() {
             var canvas = document.getElementById("myCanvas");
             initGL(canvas);
-            //camara = new CameraControl([0,2,5], canvas);
-
-        }
+            }
+        
         function webGLStart2() {
-            //console.log('ingreso a Webglstart2');
             initShaders("vertex","fragment");
 
-            crearGeometriaGrua();
+            crearGeometriaGrua(textureGrua, textureMadera);
             crearGeometriaEdificio();
             //crearGeometriaTobogan();
-            crearGeometriaPasto();
+            crearGeometriaPasto(texturePasto);
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);

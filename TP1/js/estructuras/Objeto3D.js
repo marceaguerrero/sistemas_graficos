@@ -31,6 +31,18 @@ class Objeto3D {
         this.webgl_texture_coord_buffer = null;
         this.webgl_index_buffer = null;
 
+        //por default
+        this.texture = "textura";
+        this.shaderProgram = "shaderProgram";
+
+        this.setTextura=function(textura) 
+            { 
+            this.texture = textura;}
+
+        this.setShader=function(program) 
+        { 
+        this.shaderProgram = program;}
+
         this.agregarHijo=function(h) {this.hijos.push(h)}
         //this.quitarHijo=function(h) { … }
 
@@ -71,37 +83,19 @@ class Objeto3D {
             return [1.0/filas * i,1.0/columnas * j];
         }
 
-        this.setMatrixUniforms=function(tipo) {
-            /*
-            if(tipo == 'pasto')
-            {
-                gl.uniformMatrix4fv(pastoShader.mMatrixUniform, false, this.matrizModelado);
-                gl.uniformMatrix4fv(pastoShader.vMatrixUniform, false, matrizVista);
-                gl.uniformMatrix4fv(pastoShader.pMatrixUniform, false, matrizProyeccion);
+        this.setMatrixUniforms=function() {
 
-                mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
+            gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
+            gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
+            gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, matrizProyeccion);
 
-                mat3.invert(this.normalMatrix, this.normalMatrix);
-                mat3.transpose(this.normalMatrix, this.normalMatrix);
+            mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
 
-                gl.uniformMatrix3fv(pastoShader.nMatrixUniform, false, this.normalMatrix);
+            mat3.invert(this.normalMatrix, this.normalMatrix);
+            mat3.transpose(this.normalMatrix, this.normalMatrix);
 
+            gl.uniformMatrix3fv(this.shaderProgram.nMatrixUniform, false, this.normalMatrix);
             }
-            else
-            {
-                */
-                gl.uniformMatrix4fv(shaderProgram.mMatrixUniform, false, this.matrizModelado);
-                gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, matrizVista);
-                gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, matrizProyeccion);
-
-                mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
-
-                mat3.invert(this.normalMatrix, this.normalMatrix);
-                mat3.transpose(this.normalMatrix, this.normalMatrix);
-
-                gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, this.normalMatrix);
-            //} 
-                       }
 
         this.initBuffers = function(filas,columnas, tipo, losa){
 
@@ -434,7 +428,7 @@ class Objeto3D {
 
         }
 
-        this.draw = function(matPadre, texture, tipo = null){
+        this.draw = function(matPadre){
                 this.actualizarMatrizModelado();
                 // concatenamos las transformaciones padre/hijo
                 if(matPadre){
@@ -444,68 +438,46 @@ class Objeto3D {
                 if (this.webgl_position_buffer && this.webgl_index_buffer){
                 // dibujamos la malla de triángulos con WebGL
                 // si el objeto tiene geometría asociada
-                    this.setMatrixUniforms(tipo);
+                    gl.useProgram(this.shaderProgram);
+                    this.setMatrixUniforms();
 
                     // Se configuran los buffers que alimentaron el pipeline
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
-                    /*
-                    if(tipo =='pasto')
-                        gl.vertexAttribPointer(pastoShader.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    else
-                    */
-                    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
+                    gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
                     //gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);   
     
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
-                    /*
-                    if(tipo =='pasto')
-                        gl.vertexAttribPointer(pastoShader.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    else
-                    */
-                    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
+                    gl.vertexAttribPointer(this.shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
                     //gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
-                    /*
-                    if(tipo =='pasto')
-                        gl.vertexAttribPointer(pastoShader.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    else
-                    */
-                    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
+                    gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
                     //gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
                     
-                            // Specify the texture to map onto the faces.
+                    // Specify the texture to map onto the faces.
                     //gl.useProgram(shaderProgram);
        
                     // Tell WebGL we want to affect texture unit 0
                     gl.activeTexture(gl.TEXTURE0);
                     // Bind the texture to texture unit 0
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                    //console.log(texture, this.texture);
                     // Tell the shader we bound the texture to texture unit 0
-                    //gl.uniform1i(shaderProgram.samplerUniform, 0);
-                    /*
-                    if(tipo =='pasto')
-                        gl.uniform1i(gl.getUniformLocation(pastoShader, 'uSampler'), 0);
-                    else*/                    
-                    gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
-                    
+                    //gl.uniform1i(this.shaderProgram.samplerUniform, 0);
+                    //console.log('paso por el usampler');
+                    //gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
+                    //MG
+
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
                     
                     if (modo!="wireframe"){
-                        /*
-                        if(tipo =='pasto')
-                            gl.uniform1i(pastoShader.useLightingUniform,(lighting=="true"));
-                        else*/
-                        gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
+                        gl.uniform1i(this.shaderProgram.useLightingUniform,(lighting=="true"));
                         gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
                     }
 
                     if (modo!="smooth") {
-                        /*if(tipo =='pasto')
-                            gl.uniform1i(pastoShader.useLightingUniform,false);
-                        else*/
-                        gl.uniform1i(shaderProgram.useLightingUniform,false);
+                        gl.uniform1i(this.shaderProgram.useLightingUniform,false);
                         gl.drawElements(gl.LINE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
                     }
                 }
@@ -513,7 +485,7 @@ class Objeto3D {
 
                 for (var i=0;i<this.hijos.length;i++){
                     //le mando la matriz de modelado del padre
-                    this.hijos[i].draw(this.matrizModelado, texture);}
+                    this.hijos[i].draw(this.matrizModelado);}
         }
 
     }

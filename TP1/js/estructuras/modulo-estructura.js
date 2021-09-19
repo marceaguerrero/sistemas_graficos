@@ -1,9 +1,10 @@
-function crearGeometriaPasto(){
+function crearGeometriaPasto(texturePasto){
     pasto = new Objeto3D(1,1);
     pasto.initBuffers(2, 2,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);
-    
+    pasto.setTextura(texturePasto);    
+    pasto.setShader(shaderProgram);
 }
 
 function crearGeometriaTobogan(){
@@ -46,6 +47,7 @@ function crearGeometriaEdificio(){
     piso1 = new Objeto3D();
     piso1.setAncho(2);
     piso1.setLargo(2);
+    piso1.setTextura('textureColumna');
     edif_vent1 = new Objeto3D();
     edif_vent1.setAncho(2);
     edif_vent1.setLargo(2);
@@ -242,6 +244,7 @@ function crearGeometriaEdificio(){
     piso2 = new Objeto3D();
     piso2.setAncho(2);
     piso2.setLargo(2);
+    piso2.setTextura('textureMadera');
     edif2_vent1 = new Objeto3D();
     edif2_vent1.setAncho(2);
     edif2_vent1.setLargo(2);
@@ -414,6 +417,7 @@ function crearGeometriaEdificio(){
     tapa_edif.setRotacion(Math.PI*5/6.,0., Math.PI/4.);
     tapa_edif.setPosicion(-5.5,6.,9.);
     tapa_edif.setEscala(0.45,0.6,0.45);
+    tapa_edif.setTextura('textureLosa');
     //losa_piso1.setPosicion(10.,10.,10.);
     //piso2.agregarHijo(losa_piso2);
     tapa1_tapa_edif = new Objeto3D(3,3);
@@ -427,18 +431,26 @@ function crearGeometriaEdificio(){
 }
 
 
-function crearGeometriaGrua(){
+function crearGeometriaGrua(textureGrua, textureMadera){
     // GRUA
     // pieza A
     //ancho, largo
     grua_A1 = new Objeto3D(1,1);
     grua_A1.initBuffers(3, 2,'cuadrado');
+    grua_A1.setTextura(textureGrua);
+    grua_A1.setShader(shaderProgram);
     grua_A2 = new Objeto3D(1,1);
     grua_A2.initBuffers(3, 2,'cuadrado');
+    grua_A2.setTextura(textureGrua);
+    grua_A2.setShader(shaderProgram);
     grua_A3 = new Objeto3D(1,1);
     grua_A3.initBuffers(3, 2,'cuadrado');
+    grua_A3.setTextura(textureGrua);
+    grua_A3.setShader(shaderProgram);
     grua_A4 = new Objeto3D(1,1);
     grua_A4.initBuffers(3, 2,'cuadrado');
+    grua_A4.setTextura(textureGrua);
+    grua_A4.setShader(shaderProgram);
     grua_A1.agregarHijo(grua_A2);
     grua_A1.agregarHijo(grua_A3);
     grua_A1.agregarHijo(grua_A4);
@@ -450,12 +462,20 @@ function crearGeometriaGrua(){
     // pieza B
     grua_B1 = new Objeto3D(1,1);
     grua_B1.initBuffers(4, 2,'cuadrado');
+    grua_B1.setTextura(textureGrua);
+    grua_B1.setShader(shaderProgram);
     grua_B2 = new Objeto3D(1,1);
     grua_B2.initBuffers(4, 2,'cuadrado');
+    grua_B2.setTextura(textureGrua);
+    grua_B2.setShader(shaderProgram);
     grua_B3 = new Objeto3D(1,1);
     grua_B3.initBuffers(4, 2,'cuadrado');
+    grua_B3.setTextura(textureGrua);
+    grua_B3.setShader(shaderProgram);
     grua_B4 = new Objeto3D(1,1);
     grua_B4.initBuffers(4, 2,'cuadrado');
+    grua_B4.setTextura(textureGrua);
+    grua_B4.setShader(shaderProgram);
     grua_B1.agregarHijo(grua_B2);
     grua_B1.agregarHijo(grua_B3);
     grua_B1.agregarHijo(grua_B4);
@@ -476,16 +496,26 @@ function crearGeometriaGrua(){
     grua_A1.agregarHijo(grua_C1);
     grua_C1.setPosicion(0.5,1.35,-0.5);
     grua_C1.setRotacion(Math.PI,0.,0.);
+    grua_C1.setTextura(textureGrua);
+    grua_C1.setShader(colorShader);
 
     // pieza D es la cabina
     grua_D1 = new Objeto3D(2,2);
     grua_D1.initBuffers(3, 3,'cabina');
+    grua_D1.setTextura(textureGrua);
+    grua_D1.setShader(shaderProgram);
     grua_D2 = new Objeto3D(2,2);
     grua_D2.initBuffers(3, 3,'cabina');
+    grua_D2.setTextura(textureGrua);
+    grua_D2.setShader(shaderProgram);
     grua_D3 = new Objeto3D(2,2);
     grua_D3.initBuffers(3, 2,'cuadrado');
+    grua_D3.setTextura(textureGrua);
+    grua_D3.setShader(shaderProgram);
     grua_D4 = new Objeto3D(2,2);
     grua_D4.initBuffers(3, 2,'cuadrado');
+    grua_D4.setTextura(textureGrua);
+    grua_D4.setShader(shaderProgram);
     grua_C1.agregarHijo(grua_D1);
     grua_C1.agregarHijo(grua_D2);
     grua_C1.agregarHijo(grua_D3);
@@ -512,6 +542,8 @@ function crearGeometriaGrua(){
     grua_C1.agregarHijo(grua_E1);
     grua_E1.setPosicion(0.,25.5,0.);
     grua_E1.setEscala(10,1,1.);
+    grua_E1.setTextura(textureGrua);
+    grua_E1.setShader(colorShader);
 
     //pieza F0 va a ser el contenedor para F y G, ya que como van con distintas escalas necesito que no se molesten
     //voy a hacerla tipo cilindro así se parece a la imagen original
@@ -521,7 +553,9 @@ function crearGeometriaGrua(){
     grua_F0.setPosicion(5.,5.,5.);
     grua_F0.setEscala(0.3,-0.1,0.3);
     grua_F0.setRotacion(0.,Math.PI/2,0.);
+    grua_F0.setTextura(textureMadera);
     grua_C1.agregarHijo(grua_F0);
+    grua_F0.setShader(shaderProgram);
 
     //pieza F - cables
     grua_F1 = new Objeto3D(1,1);
@@ -529,13 +563,19 @@ function crearGeometriaGrua(){
     grua_F1.setPosicion(9.,3.75,0.);
     grua_F1.setEscala(0.,0.5,2.);
     grua_C1.agregarHijo(grua_F1);
+    grua_F1.setTextura(textureGrua);
+    grua_F1.setShader(colorShader);
 
     //F2, F3 y G0 no pueden depender de F1 porque cuando expandis el cable, cambias la escala y los afectas
     //por eso, dependen de F1a
     grua_F2 = new Objeto3D(2,2);
     grua_F2.initBuffers(4, 2,'cuadrado');
+    grua_F2.setTextura(textureGrua);
+    grua_F2.setShader(colorShader);
     grua_F3 = new Objeto3D(2,2);
     grua_F3.initBuffers(4, 2,'cuadrado');
+    grua_F3.setTextura(textureGrua);
+    grua_F3.setShader(colorShader);
     grua_F0.agregarHijo(grua_F2);
     grua_F0.agregarHijo(grua_F3);
 
@@ -552,6 +592,8 @@ function crearGeometriaGrua(){
     grua_G1.initBuffers(3, 2,'cuadrado');
     grua_G1.setPosicion(11.,40.,5.5); //z es el alto, y profundidad, x es x esta cambiado porque depende de F0
     grua_G1.setEscala(4.,8.,8.);
+    grua_G1.setTextura (textureMadera);
+    grua_G1.setShader(shaderProgram);
     grua_F0.agregarHijo(grua_G1);
 
     //bajo toda la escena -1 en y y en -1 en x
