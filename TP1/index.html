@@ -286,9 +286,9 @@
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-                //gl.generateMipmap(gl.TEXTURE_2D);
-                gl.bindTexture(gl.TEXTURE_2D, null);
-                /*
+                gl.generateMipmap(gl.TEXTURE_2D);
+                //gl.bindTexture(gl.TEXTURE_2D, null);
+                                /*
                 if (cantTextures > 1)
                     {   console.log('faltan cargar ' + cantTextures);
                         cantTextures --;}
@@ -301,7 +301,6 @@
             }
             image.src = path;
             texture.image = image;
-            //agrega la textura a glTextures
             return texture;
             }
 
@@ -368,6 +367,7 @@
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
                     pasto.draw(null);}
                 }           
+
             grua_A1.draw(null);          
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
@@ -481,7 +481,7 @@
             initShaders("vertex","fragment");
 
             crearGeometriaGrua(textureGrua, textureMadera);
-            crearGeometriaEdificio();
+            crearGeometriaEdificio(textureLosa);
             //crearGeometriaTobogan();
             crearGeometriaPasto(texturePasto);
 

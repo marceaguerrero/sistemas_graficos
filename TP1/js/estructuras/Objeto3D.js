@@ -37,6 +37,11 @@ class Objeto3D {
         this.tipoShader = "textura";
         this.color = vec3.create();
         this.color = new Float32Array([0.500,0.50,0.50, 1.0]);
+        this.nroTextura = 0;
+
+        this.setNroTextura=function(valor) 
+            { 
+            this.nroTextura = valor;}
 
         this.setTextura=function(textura) 
             { 
@@ -93,25 +98,6 @@ class Objeto3D {
         this.getCoordenadasTextura=function(i,j, filas, columnas){
             return [1.0/filas * i,1.0/columnas * j];
         }
-
-        this.setMatrixUniforms=function() {
-            // esta linea es la del problema
-            //gl.useProgram(this.shaderProgram);
-
-            gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
-            gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
-            gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, matrizProyeccion);
-            if (this.tipoShader == "color")
-            {
-                gl.uniform4fv( this.shaderProgram.fColorLocation, this.color );
-            }
-            mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
-
-            mat3.invert(this.normalMatrix, this.normalMatrix);
-            mat3.transpose(this.normalMatrix, this.normalMatrix);
-
-            gl.uniformMatrix3fv(this.shaderProgram.nMatrixUniform, false, this.normalMatrix);
-            }
 
         this.initBuffers = function(filas,columnas, tipo, losa){
 
@@ -444,6 +430,26 @@ class Objeto3D {
 
         }
 
+        this.setMatrixUniforms=function() {
+            // esta linea es la del problema
+            gl.useProgram(this.shaderProgram);
+
+            gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
+            gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
+            gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, matrizProyeccion);
+            if (this.tipoShader == "color")
+            {
+                gl.uniform4fv( this.shaderProgram.fColorLocation, this.color );
+            }
+            mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
+
+            mat3.invert(this.normalMatrix, this.normalMatrix);
+            mat3.transpose(this.normalMatrix, this.normalMatrix);
+
+            gl.uniformMatrix3fv(this.shaderProgram.nMatrixUniform, false, this.normalMatrix);
+            }
+
+
         this.draw = function(matPadre){
                 this.actualizarMatrizModelado();
                 // concatenamos las transformaciones padre/hijo
@@ -468,21 +474,21 @@ class Objeto3D {
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
                     //gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-
-                    
-
-                    // Specify the texture to map onto the faces.
-                    //gl.useProgram(this.shaderProgram);
-       
+      
                     // Tell WebGL we want to affect texture unit 0
-                    gl.activeTexture(gl.TEXTURE0);
-                    // Bind the texture to texture unit 0
+                    if (this.nroTextura==4) //pasto
+                        gl.activeTexture(gl.TEXTURE0);
+                    if (this.nroTextura==1) //grua
+                        gl.activeTexture(gl.TEXTURE1);
+                    if (this.nroTextura==2) //madera
+                        gl.activeTexture(gl.TEXTURE2);
+
+                        // Bind the texture to texture unit 0
                     gl.bindTexture(gl.TEXTURE_2D, this.texture);
                     // Tell the shader we bound the texture to texture unit 0
                     //gl.uniform1i(this.shaderProgram.samplerUniform, 0);
                     //console.log('paso por el usampler');
-                    gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
-                    //MG
+                    //gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
 
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
                     
