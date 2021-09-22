@@ -3,8 +3,11 @@ function crearGeometriaPasto(texturePasto){
     pasto.initBuffers(2, 2,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);
+
     pasto.setTextura(texturePasto);    
     pasto.setShader(shaderProgram);
+    pasto.setTipoShader("textura");
+
 }
 
 function crearGeometriaTobogan(){
@@ -55,10 +58,14 @@ function crearGeometriaEdificio(){
     edif_vent1.setLargo(2);
     edif_vent1.initBuffers(anchoVidrio, altoVidrio-1.,'cuadrado');
     edif_vent1.setPosicion(0., 0., 15.);
+    color = new Float32Array([0.30,0.30,1.0, 1.0]);
+
     rect_invi.push([0.0, 0.0, 13.]);
 
-    edif_vent1.setTextura(textureColumna);
     edif_vent1.setShader(colorShader);
+    edif_vent1.setTipoShader("color");
+    edif_vent1.setTextura(textureColumna);
+    edif_vent1.setColor(color);
 
     edif_vent2 = new Objeto3D();
     edif_vent2.setAncho(2);
@@ -68,8 +75,10 @@ function crearGeometriaEdificio(){
     edif_vent2.setPosicion(1., 0., 0.);
     rect_invi.push([1.0, 0.0, 13.]);
 
-    edif_vent2.setTextura(textureColumna);
     edif_vent2.setShader(colorShader);
+    edif_vent2.setTipoShader("color");
+    edif_vent2.setColor(color);
+    edif_vent2.setTextura(textureColumna);
 
     edif_vent3 = new Objeto3D();
     edif_vent3.setAncho(2);
@@ -81,6 +90,8 @@ function crearGeometriaEdificio(){
 
     edif_vent3.setTextura(textureColumna);
     edif_vent3.setShader(colorShader);
+    edif_vent3.setTipoShader("color");
+    edif_vent3.setColor(color);
 
     //giro para el otro lado
     edif_vent8 = new Objeto3D();
@@ -94,6 +105,8 @@ function crearGeometriaEdificio(){
 
     edif_vent8.setTextura(textureColumna);
     edif_vent8.setShader(colorShader);
+    edif_vent8.setTipoShader("color");
+    edif_vent8.setColor(color);
 
     edif_vent9 = new Objeto3D();
     edif_vent9.setAncho(2);
@@ -105,6 +118,8 @@ function crearGeometriaEdificio(){
 
     edif_vent9.setTextura(textureColumna);
     edif_vent9.setShader(colorShader);
+    edif_vent9.setTipoShader("color");
+    edif_vent9.setColor(color);
 
     edif_vent10 = new Objeto3D();
     edif_vent10.setAncho(2);
@@ -116,6 +131,8 @@ function crearGeometriaEdificio(){
 
     edif_vent10.setTextura(textureColumna);
     edif_vent10.setShader(colorShader);
+    edif_vent10.setTipoShader("color");
+    edif_vent10.setColor(color);
 
     edif_vent11 = new Objeto3D();
     edif_vent11.setAncho(2);
@@ -127,6 +144,8 @@ function crearGeometriaEdificio(){
 
     edif_vent11.setTextura(textureColumna);
     edif_vent11.setShader(colorShader);
+    edif_vent11.setTipoShader("color");
+    edif_vent11.setColor(color);
 
     //cierro las ventanas
     edif_vent12 = new Objeto3D();
@@ -139,6 +158,8 @@ function crearGeometriaEdificio(){
 
     edif_vent12.setTextura(textureColumna);
     edif_vent12.setShader(colorShader);
+    edif_vent12.setTipoShader("color");
+    edif_vent12.setColor(color);
 
     edif_vent13 = new Objeto3D();
     edif_vent13.setAncho(2);
@@ -147,8 +168,10 @@ function crearGeometriaEdificio(){
     edif_vent12.agregarHijo(edif_vent13);
     edif_vent13.setPosicion(1., 0., 0.);
 
-    edif_vent13.setTextura(textureColumna);
     edif_vent13.setShader(colorShader);
+    edif_vent13.setTipoShader("color");
+    edif_vent13.setColor(color);
+    edif_vent13.setTextura(textureColumna);
 
     edif_vent14 = new Objeto3D();
     edif_vent14.setAncho(2);
@@ -160,8 +183,10 @@ function crearGeometriaEdificio(){
     rect_invi.push([2.0, 0.0, 21.]);
     rect_invi.push([1.0, 0.0, 21.]);
 
-    edif_vent14.setTextura(textureColumna);
     edif_vent14.setShader(colorShader);
+    edif_vent14.setTipoShader("color");
+    edif_vent14.setColor(color);
+    edif_vent14.setTextura(textureColumna);
 
     //giro
     edif_vent4 = new Objeto3D();
@@ -171,8 +196,10 @@ function crearGeometriaEdificio(){
     edif_vent1.agregarHijo(edif_vent4);
     edif_vent4.setRotacion(0.,0.,Math.PI/2);
 
-    edif_vent4.setTextura(textureColumna);
     edif_vent4.setShader(colorShader);
+    edif_vent4.setTipoShader("color");
+    edif_vent4.setColor(color);
+    edif_vent4.setTextura(textureColumna);
 
     edif_vent5 = new Objeto3D();
     edif_vent5.setAncho(2);
@@ -181,8 +208,10 @@ function crearGeometriaEdificio(){
     edif_vent4.agregarHijo(edif_vent5);
     edif_vent5.setPosicion(1., 0., 0.);
 
-    edif_vent5.setTextura(textureColumna);
     edif_vent5.setShader(colorShader);
+    edif_vent5.setTipoShader("color");
+    edif_vent5.setColor(color);
+    edif_vent5.setTextura(textureColumna);
 
     edif_vent6 = new Objeto3D();
     edif_vent6.setAncho(2);
@@ -191,8 +220,10 @@ function crearGeometriaEdificio(){
     edif_vent4.agregarHijo(edif_vent6);
     edif_vent6.setPosicion(2., 0., 0.);
 
-    edif_vent6.setTextura(textureColumna);
     edif_vent6.setShader(colorShader);
+    edif_vent6.setTipoShader("color");
+    edif_vent6.setColor(color);
+    edif_vent6.setTextura(textureColumna);
 
     edif_vent7 = new Objeto3D();
     edif_vent7.setAncho(2);
@@ -201,8 +232,10 @@ function crearGeometriaEdificio(){
     edif_vent4.agregarHijo(edif_vent7);
     edif_vent7.setPosicion(3., 0., 0.);
 
-    edif_vent7.setTextura(textureColumna);
     edif_vent7.setShader(colorShader);
+    edif_vent7.setTipoShader("color");
+    edif_vent7.setColor(color);
+    edif_vent7.setTextura(textureColumna);
 
     rect_invi.push([-2.0, 0.0, 19.]);
     rect_invi.push([-2.0, 0.0, 18.]);
@@ -554,8 +587,12 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_A1.agregarHijo(grua_C1);
     grua_C1.setPosicion(0.5,1.35,-0.5);
     grua_C1.setRotacion(Math.PI,0.,0.);
+    color = new Float32Array([0.500,0.50,0.50, 1.0]);
+    grua_C1.setColor(color);
     grua_C1.setTextura(textureGrua);
     grua_C1.setShader(colorShader);
+    grua_C1.setTipoShader("color");
+
 
     // pieza D es la cabina
     grua_D1 = new Objeto3D(2,2);
@@ -600,8 +637,13 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_C1.agregarHijo(grua_E1);
     grua_E1.setPosicion(0.,25.5,0.);
     grua_E1.setEscala(10,1,1.);
+
     grua_E1.setTextura(textureGrua);
     grua_E1.setShader(colorShader);
+    grua_E1.setColor(color);
+    grua_E1.setTipoShader("color");
+
+
 
     //pieza F0 va a ser el contenedor para F y G, ya que como van con distintas escalas necesito que no se molesten
     //voy a hacerla tipo cilindro así se parece a la imagen original
@@ -611,18 +653,27 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_F0.setPosicion(5.,5.,5.);
     grua_F0.setEscala(0.3,-0.1,0.3);
     grua_F0.setRotacion(0.,Math.PI/2,0.);
-    grua_F0.setTextura(textureMadera);
     grua_C1.agregarHijo(grua_F0);
-    grua_F0.setShader(shaderProgram);
 
+    grua_F0.setTextura(textureMadera);
+    grua_F0.setShader(shaderProgram);
+    grua_F0.setColor(color);
+    grua_F0.setTipoShader("color");
+
+
+    
     //pieza F - cables
     grua_F1 = new Objeto3D(1,1);
     grua_F1.initBuffers(45, 2,'cuadrado');
     grua_F1.setPosicion(9.,3.75,0.);
     grua_F1.setEscala(0.,0.5,2.);
     grua_C1.agregarHijo(grua_F1);
+
     grua_F1.setTextura(textureGrua);
     grua_F1.setShader(colorShader);
+    grua_F1.setColor(color);
+    grua_F1.setTipoShader("color");
+
 
     //F2, F3 y G0 no pueden depender de F1 porque cuando expandis el cable, cambias la escala y los afectas
     //por eso, dependen de F1a
@@ -630,10 +681,15 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_F2.initBuffers(4, 2,'cuadrado');
     grua_F2.setTextura(textureGrua);
     grua_F2.setShader(colorShader);
+    grua_F2.setColor(color);
+    grua_F2.setTipoShader("color");
+
     grua_F3 = new Objeto3D(2,2);
     grua_F3.initBuffers(4, 2,'cuadrado');
     grua_F3.setTextura(textureGrua);
     grua_F3.setShader(colorShader);
+    grua_F3.setColor(color);
+    grua_F3.setTipoShader("color");
     grua_F0.agregarHijo(grua_F2);
     grua_F0.agregarHijo(grua_F3);
 

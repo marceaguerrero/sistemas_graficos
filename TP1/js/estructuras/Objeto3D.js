@@ -34,6 +34,9 @@ class Objeto3D {
         //por default
         this.texture = "textura";
         this.shaderProgram = "shaderProgram";
+        this.tipoShader = "textura";
+        this.color = vec3.create();
+        this.color = new Float32Array([0.500,0.50,0.50, 1.0]);
 
         this.setTextura=function(textura) 
             { 
@@ -42,6 +45,14 @@ class Objeto3D {
         this.setShader=function(program) 
         { 
         this.shaderProgram = program;}
+
+        this.setTipoShader=function(program) 
+        { 
+        this.tipoShader = program;}
+
+        this.setColor=function(program) 
+        { 
+        this.color = program;}
 
         this.agregarHijo=function(h) {this.hijos.push(h)}
         //this.quitarHijo=function(h) { … }
@@ -85,12 +96,15 @@ class Objeto3D {
 
         this.setMatrixUniforms=function() {
             // esta linea es la del problema
-            gl.useProgram(this.shaderProgram);
+            //gl.useProgram(this.shaderProgram);
 
             gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
             gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
             gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, matrizProyeccion);
-
+            if (this.tipoShader == "color")
+            {
+                gl.uniform4fv( this.shaderProgram.fColorLocation, this.color );
+            }
             mat3.fromMat4(this.normalMatrix,this.matrizModelado); // normalMatrix= (inversa(traspuesta(matrizModelado)));
 
             mat3.invert(this.normalMatrix, this.normalMatrix);
@@ -456,6 +470,7 @@ class Objeto3D {
                     //gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
                     
+
                     // Specify the texture to map onto the faces.
                     //gl.useProgram(this.shaderProgram);
        
@@ -463,11 +478,10 @@ class Objeto3D {
                     gl.activeTexture(gl.TEXTURE0);
                     // Bind the texture to texture unit 0
                     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                    //console.log(texture, this.texture);
                     // Tell the shader we bound the texture to texture unit 0
                     //gl.uniform1i(this.shaderProgram.samplerUniform, 0);
                     //console.log('paso por el usampler');
-                    //gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
+                    gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
                     //MG
 
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);

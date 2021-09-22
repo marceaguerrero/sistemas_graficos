@@ -13,6 +13,8 @@
 
         uniform sampler2D uSampler;
 
+        uniform vec4 fColor;
+
         void main(void) {
             
 
@@ -21,9 +23,11 @@
             
             vec3 color=(uAmbientColor+uDirectionalColor*max(dot(vNormal,lightDirection), 0.0)); //*textureColor.xyz
           
-            vec3 colorB = vec3(0.500,0.50,0.50);
-
-            gl_FragColor = vec4(colorB,1.0);
-																		
+            // gris de la grua
+            // vec3 colorB = vec3(0.500,0.50,0.50);
+            // azul como para los vidrios
+            // vec3 colorB = vec3(0.30,0.30,1.0);
+            //gl_FragColor = vec4(colorB,1.0);
+            gl_FragColor = fColor;
  
         }

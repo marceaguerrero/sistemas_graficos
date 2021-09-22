@@ -258,6 +258,7 @@
             colorShader.frameUniform = gl.getUniformLocation(colorShader, "time");
             colorShader.lightingDirectionUniform = gl.getUniformLocation(colorShader, "uLightPosition");
             colorShader.directionalColorUniform = gl.getUniformLocation(colorShader, "uDirectionalColor");
+            colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
         }
 
         function initTextures(){
@@ -285,8 +286,8 @@
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-                gl.generateMipmap(gl.TEXTURE_2D);
-                //gl.bindTexture(gl.TEXTURE_2D, null);
+                //gl.generateMipmap(gl.TEXTURE_2D);
+                gl.bindTexture(gl.TEXTURE_2D, null);
                 /*
                 if (cantTextures > 1)
                     {   console.log('faltan cargar ' + cantTextures);
@@ -368,11 +369,9 @@
                     pasto.draw(null);}
                 }           
             grua_A1.draw(null);          
-            /*
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
                 piso1.draw(null, textureColumna);}
-              */
             /*             
             for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
