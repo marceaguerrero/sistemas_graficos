@@ -432,7 +432,8 @@ class Objeto3D {
 
         this.setMatrixUniforms=function() {
             // esta linea es la del problema
-            gl.useProgram(this.shaderProgram);
+            //console.log(this.shaderProgram);
+            //gl.useProgram(this.shaderProgram);
 
             gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
             gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
@@ -450,16 +451,23 @@ class Objeto3D {
             }
 
 
-        this.draw = function(matPadre, texturePasto, textureMadera, textureGrua){
+        this.draw = function(matPadre, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna){
                 this.actualizarMatrizModelado();
                 // concatenamos las transformaciones padre/hijo
                 if(matPadre){
                     mat4.multiply(this.matrizModelado,matPadre,this.matrizModelado);
                     }
 
+
                 if (this.webgl_position_buffer && this.webgl_index_buffer){
+                    gl.useProgram(this.shaderProgram);
                     this.setMatrixUniforms();
 
+                    //esto lo cambié de lugar, estaba en modulo-shader con un use program
+                    gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
+                    gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
+                    gl.enableVertexAttribArray(this.shaderProgram.vertexNormalAttribute);
+                
                     // Se configuran los buffers que alimentaron el pipeline
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -473,16 +481,24 @@ class Objeto3D {
            
                     gl.bindTexture(gl.TEXTURE_2D, this.texture);
   */     
-
-                    gl.activeTexture(gl.TEXTURE0);
-                    if (this.nroTextura==4) //pasto
-                        gl.bindTexture(gl.TEXTURE_2D, texturePasto);
+                    var unit = parseInt(this.nroTextura);
+                    if (this.nroTextura==0) //columna
+                        {gl.activeTexture(gl.TEXTURE0);
+                        gl.bindTexture(gl.TEXTURE_2D, textureColumna);}
                     if (this.nroTextura==1) //grua
-                        gl.bindTexture(gl.TEXTURE_2D, textureGrua);
-                    if (this.nroTextura==2) //madera
-                        gl.bindTexture(gl.TEXTURE_2D, textureMadera);
+                        {gl.activeTexture(gl.TEXTURE1);
+                        gl.bindTexture(gl.TEXTURE_2D, textureGrua);}
+                    if (this.nroTextura==2) //losa
+                        {gl.activeTexture(gl.TEXTURE2);
+                        gl.bindTexture(gl.TEXTURE_2D, textureLosa);}
+                    if (this.nroTextura==3) //madera
+                        {gl.activeTexture(gl.TEXTURE3);
+                        gl.bindTexture(gl.TEXTURE_2D, textureMadera);}
+                    if (this.nroTextura==4) //pasto
+                        {gl.activeTexture(gl.TEXTURE4);
+                        gl.bindTexture(gl.TEXTURE_2D, texturePasto);}
 
-                    gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
+                    gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), unit);
              
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
                     
@@ -500,7 +516,7 @@ class Objeto3D {
 
                 for (var i=0;i<this.hijos.length;i++){
                     //le mando la matriz de modelado del padre
-                    this.hijos[i].draw(this.matrizModelado, texturePasto, textureMadera, textureGrua);}
+                    this.hijos[i].draw(this.matrizModelado, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);}
         }
 
     }

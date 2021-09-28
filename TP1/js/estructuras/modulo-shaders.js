@@ -51,17 +51,20 @@ function initShaders(gl, vs, fs) {
         alert("Could not initialise shaders");
     }
 
-    //gl.useProgram(shader);
  
     shader.vertexPositionAttribute = gl.getAttribLocation(shader, "aPosition");
-    gl.enableVertexAttribArray(shader.vertexPositionAttribute);
-
-    shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
-    gl.enableVertexAttribArray(shader.textureCoordAttribute);
-
     shader.vertexNormalAttribute = gl.getAttribLocation(shader, "aNormal");
-    gl.enableVertexAttribArray(shader.vertexNormalAttribute);
+    shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
 
+    //houston we have a problem
+
+/*
+    gl.useProgram(shader);
+
+    gl.enableVertexAttribArray(shader.vertexPositionAttribute);
+    gl.enableVertexAttribArray(shader.textureCoordAttribute);
+    gl.enableVertexAttribArray(shader.vertexNormalAttribute);
+*/
     shader.pMatrixUniform = gl.getUniformLocation(shader, "uPMatrix");
     shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
     shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");
