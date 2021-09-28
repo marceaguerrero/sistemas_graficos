@@ -14,25 +14,33 @@
         uniform sampler2D uSampler;
 
         uniform vec4 fColor;
+        uniform float luzAmbiente;   
 
         void main(void) {
             
 
-            vec4 textureColor = texture2D(uSampler, vUv);
-            vec3 lightDirection= normalize(uLightPosition - vec3(vWorldPosition));
+            highp vec3 directionalLightColor = vec3(1, 1, 1);
+            float specularStrength = 0.5;
+            float brightness = 32.0;
+            vec3 lightColor = vec3(1.0,1.0,1.0);
             
-            vec3 color=(uAmbientColor+uDirectionalColor*max(dot(vNormal,lightDirection), 0.0)); //*textureColor.xyz
-            float ambientStrength = 0.0;
-            //vec3 ambient = ambientStrength * color;
+            vec4 textureColor = texture2D(uSampler, vUv);
+            vec3 lightDirection= normalize(uLightPosition);
+            
+            //luzAmbiente se modifica del menu
+            vec3 u_Ambient_color=  luzAmbiente * lightColor;
+            
+            //la luz difusa se calcula
+            float diff = max(dot(vNormal, lightDirection), 0.0);
+            vec3 u_Diffuse_color = diff * directionalLightColor * lightColor;
+            
+            //la luz especular se calcula
+            vec3 viewDir = normalize(uLightPosition - vWorldPosition);
+            vec3 reflectDir = reflect(-lightDirection, vNormal); 
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), brightness);
+            vec3 u_Specular_color = specularStrength * spec * directionalLightColor * lightColor; 
+    
+            gl_FragColor = vec4((u_Ambient_color + u_Diffuse_color + u_Specular_color), 1.0) * (fColor);
 
-            //vec3 result = ambient * objectColor;
-            //FragColor = vec4(result, 1.0);
-
-            // gris de la grua
-            // vec3 colorB = vec3(0.500,0.50,0.50);
-            // azul como para los vidrios
-            // vec3 colorB = vec3(0.30,0.30,1.0);
-            //gl_FragColor = vec4(colorB,1.0);
-            //gl_FragColor = ambientStrength * fColor;
-            gl_FragColor =  fColor;
+            //gl_FragColor =  fColor;
         }

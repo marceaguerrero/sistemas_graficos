@@ -61,6 +61,7 @@ function crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,color
     edif_vent1.setPosicion(0., 0., 15.);
 
     color = new Float32Array([0.30,0.30,1.0, 1.0]);
+    //color = new Float32Array([0.30,0.30,1.0]);
 
     rect_invi.push([0.0, 0.0, 13.]);
 
@@ -359,6 +360,7 @@ function crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,color
 
     //ascensor
     color = new Float32Array([0.500,0.50,0.50, 1.0]);
+    //color = new Float32Array([0.500,0.50,0.50]);
 
     ascen1_piso1 = new Objeto3D(1,1);
     ascen1_piso1.initBuffers(2, 2,'cuadrado');
@@ -404,6 +406,7 @@ function crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,color
 
     //TIPO PISO 2
     color = new Float32Array([0.30,0.30,1.0, 1.0]);
+    //color = new Float32Array([0.30,0.30,1.0]);
     rect_invi = [];
     piso2 = new Objeto3D();
     piso2.setAncho(2);
@@ -638,6 +641,7 @@ function crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,color
 
     //ascensor
     color = new Float32Array([0.500,0.50,0.50, 1.0]);
+    //color = new Float32Array([0.500,0.50,0.50]);
 
     ascen1_piso2 = new Objeto3D(1,1);
     ascen1_piso2.initBuffers(2, 2,'cuadrado');
@@ -803,6 +807,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_C1.setPosicion(0.5,1.35,-0.5);
     grua_C1.setRotacion(Math.PI,0.,0.);
     color = new Float32Array([0.500,0.50,0.50, 1.0]);
+    //color = new Float32Array([0.500,0.50,0.50]);
     grua_C1.setColor(color);
     grua_C1.setTextura(textureGrua);
     grua_C1.setNroTextura(1);

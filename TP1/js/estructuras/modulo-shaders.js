@@ -1,5 +1,4 @@
 function initTextures(gl,imagenTextura){
-    //textureColumna = loadTexture("textures/columnas.jpg");
     textureColumna = loadTexture(gl, imagenTextura[0]);
     textureGrua = loadTexture(gl, imagenTextura[1]);
     textureLosa = loadTexture(gl, imagenTextura[2]);
@@ -56,9 +55,9 @@ function initShaders(gl, vs, fs) {
     shader.vertexNormalAttribute = gl.getAttribLocation(shader, "aNormal");
     shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
 
-    //houston we have a problem
-
 /*
+    según lei esto se hace en el momento del render, ahí fue al Objeto3D
+
     gl.useProgram(shader);
 
     gl.enableVertexAttribArray(shader.vertexPositionAttribute);
@@ -75,17 +74,23 @@ function initShaders(gl, vs, fs) {
     shader.frameUniform = gl.getUniformLocation(shader, "time");
     shader.lightingDirectionUniform = gl.getUniformLocation(shader, "uLightPosition");
     shader.directionalColorUniform = gl.getUniformLocation(shader, "uDirectionalColor");
+    shader.luzAmbienteUniform = gl.getUniformLocation(shader, "luzAmbiente");
+
 
     return shader
     }
 
     function cargarUniform(gl, shader, lightPosition) {
+            gl.useProgram(shader);
             // Se inicializan las variables asociadas con la Iluminación
             gl.uniform1f(shader.frameUniform, time/10.0 );
             gl.uniform3f(shader.ambientColorUniform, 0.6, 0.6, 0.6 );
             gl.uniform3f(shader.directionalColorUniform, 1., 0., 0.);
             gl.uniform1i(shader.useLightingUniform,(lighting=="true"));
+            
             gl.uniform3fv(shader.lightingDirectionUniform, lightPosition);
+            
+            gl.uniform1f(shader.luzAmbienteUniform, luzAmbiente);
 
             return shader;
     };
@@ -105,16 +110,6 @@ function initShaders(gl, vs, fs) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
             gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
-                            /*
-            if (cantTextures > 1)
-                {   console.log('faltan cargar ' + cantTextures);
-                    cantTextures --;}
-            else
-                {   
-                    console.log('termino de cargar las texturas');
-                    webGLStart2();
-                }
-            */
         }
         image.src = path;
         texture.image = image;

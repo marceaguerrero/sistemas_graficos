@@ -431,10 +431,6 @@ class Objeto3D {
         }
 
         this.setMatrixUniforms=function() {
-            // esta linea es la del problema
-            //console.log(this.shaderProgram);
-            //gl.useProgram(this.shaderProgram);
-
             gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
             gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
             gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, matrizProyeccion);
@@ -463,7 +459,6 @@ class Objeto3D {
                     gl.useProgram(this.shaderProgram);
                     this.setMatrixUniforms();
 
-                    //esto lo cambié de lugar, estaba en modulo-shader con un use program
                     gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
                     gl.enableVertexAttribArray(this.shaderProgram.textureCoordAttribute);
                     gl.enableVertexAttribArray(this.shaderProgram.vertexNormalAttribute);
@@ -477,10 +472,7 @@ class Objeto3D {
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
-/*
-           
-                    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-  */     
+
                     var unit = parseInt(this.nroTextura);
                     if (this.nroTextura==0) //columna
                         {gl.activeTexture(gl.TEXTURE0);
