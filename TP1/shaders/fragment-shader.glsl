@@ -19,10 +19,14 @@
             vec4 textureColor = texture2D(uSampler, vUv);
             vec3 lightDirection= normalize(uLightPosition - vec3(vWorldPosition));
             
-            vec3 color=(uAmbientColor+uDirectionalColor*max(dot(vNormal,lightDirection), 0.0)); //*textureColor.xyz
           
-            //color.x = 1.0;
+            float ambientStrength = 0.0;
+
+            vec3 color=(uAmbientColor+uDirectionalColor*max(dot(vNormal,lightDirection), 0.0)); //*textureColor.xyz
+ 
             //gl_FragColor = vec4(vUv,0.0, 1.0);
             //gl_FragColor = vec4(color,1.0);
-            gl_FragColor = textureColor;
+
+            //gl_FragColor = ambientStrength * textureColor;
+            gl_FragColor =  textureColor;
         }

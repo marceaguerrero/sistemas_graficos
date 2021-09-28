@@ -12,6 +12,7 @@
     <script src="js/estructuras/modulo-geometria.js"></script>
     <script src="js/estructuras/modulo-curvas.js"></script>
     <script src="js/estructuras/modulo-estructura.js"></script>
+    <script src="js/estructuras/modulo-shaders.js"></script>
     <script src="js/estructuras/perlin-noise.js"></script>
     <script src="js/estructuras/Objeto3D.js"></script>
 
@@ -45,6 +46,7 @@
 
         var modo="edges"; // wireframe, smooth, edges
         var shaderProgram;
+        var colorShader;
         var time=0;
 
         var gl;
@@ -81,7 +83,11 @@
         var fragmentShaderSource;
         var colorVertexShaderSource;
         var colorFragmentShaderSource;
-
+        var textureColumna;
+        var textureGrua;
+        var textureLosa;
+        var textureMadera;
+        var texturePasto;
         var current_cam = 1; //1 es drone, 2 es orbital
         var drone = new DroneCameraControl([0,2,5]);
         var orbital = new OrbitalCameraControl();
@@ -107,13 +113,10 @@
         }
 
         function loadShaders(){
-
             $.when(loadVS(), loadVS2(), loadFS(), loadFS2()).done(function(res1,res2, res3, res4){
-                //this code is executed when all ajax calls are done
-                //aca iria init texture y luego webglstart
                 webGLStart1();
-                //console.log('termino webglstart1');
-                initTextures();
+                textureColumna, textureGrua, textureLosa, textureMadera, texturePasto = initTextures(gl,imagenTextura);
+                webGLStart2();
             });
 
             function loadVS() {
@@ -154,161 +157,14 @@
 
         }
 
-        function getShader(gl,code,type) {
-
-            var shader;
-
-            if (type == "fragment")
-                shader = gl.createShader(gl.FRAGMENT_SHADER);
-            else // "vertex"
-                shader = gl.createShader(gl.VERTEX_SHADER);
-
-            gl.shaderSource(shader, code);
-            gl.compileShader(shader);
-
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.log('Error en la compilación del shader: ', gl.getShaderInfoLog(shader));
-                return null;
-            }
-            return shader;
-        }
-
         function onResize(){
-            gl.canvas.width=$canvas.width();
-            gl.canvas.height=$canvas.height();
-            aspect=$canvas.width()/$canvas.height();
-        }
-
-        function getShaderSource(url) {
-            var req = new XMLHttpRequest();
-            req.open("GET", url, false);
-            req.send(null);
-            return (req.status == 200) ? req.responseText : null;
-        };
-
-        function initShaders(vs, fs) {
-
-            //Shader de texturas
-            var fragmentShader= getShader(gl, vertexShaderSource,"vertex");
-            var vertexShader= getShader(gl, fragmentShaderSource,"fragment");
-
-            shaderProgram = gl.createProgram();
-            gl.attachShader(shaderProgram, vertexShader);
-            gl.attachShader(shaderProgram, fragmentShader);
-            gl.linkProgram(shaderProgram);
-
-            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-                alert("Could not initialise shaders");
+                gl.canvas.width=$canvas.width();
+                gl.canvas.height=$canvas.height();
+                aspect=$canvas.width()/$canvas.height();
             }
 
-            gl.useProgram(shaderProgram);
-         
-            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aPosition");
-            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-            shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aUv");
-            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-
-            shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aNormal");
-            gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-
-            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-            shaderProgram.mMatrixUniform = gl.getUniformLocation(shaderProgram, "uMMatrix");
-            shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "uVMatrix");
-            shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
-            shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-            shaderProgram.useLightingUniform = gl.getUniformLocation(shaderProgram, "uUseLighting");
-            shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
-            shaderProgram.frameUniform = gl.getUniformLocation(shaderProgram, "time");
-            shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightPosition");
-            shaderProgram.directionalColorUniform = gl.getUniformLocation(shaderProgram, "uDirectionalColor");
-
-            //Shader de color
-            
-            var color_fragmentShader= getShader(gl, colorVertexShaderSource,"vertex");
-            var color_vertexShader= getShader(gl, colorFragmentShaderSource,"fragment");
-
-            colorShader = gl.createProgram();
-            gl.attachShader(colorShader,color_vertexShader);
-            gl.attachShader(colorShader, color_fragmentShader);
-            gl.linkProgram(colorShader);
-
-            if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
-                alert("Could not initialise shaders");
-            }
-
-            gl.useProgram(colorShader);
-
-            colorShader.vertexPositionAttribute = gl.getAttribLocation(colorShader, "aPosition");
-            gl.enableVertexAttribArray(colorShader.vertexPositionAttribute);
-
-            colorShader.textureCoordAttribute = gl.getAttribLocation(colorShader, "aUv");
-            gl.enableVertexAttribArray(colorShader.textureCoordAttribute);
-
-            colorShader.vertexNormalAttribute = gl.getAttribLocation(colorShader, "aNormal");
-            gl.enableVertexAttribArray(colorShader.vertexNormalAttribute);
-
-            colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
-            colorShader.mMatrixUniform = gl.getUniformLocation(colorShader, "uMMatrix");
-            colorShader.vMatrixUniform = gl.getUniformLocation(colorShader, "uVMatrix");
-            colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
-            colorShader.samplerUniform = gl.getUniformLocation(colorShader, "uSampler");
-            colorShader.useLightingUniform = gl.getUniformLocation(colorShader, "uUseLighting");
-            colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
-            colorShader.frameUniform = gl.getUniformLocation(colorShader, "time");
-            colorShader.lightingDirectionUniform = gl.getUniformLocation(colorShader, "uLightPosition");
-            colorShader.directionalColorUniform = gl.getUniformLocation(colorShader, "uDirectionalColor");
-            colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
-        }
-
-        function initTextures(){
-            //textureColumna = loadTexture("textures/columnas.jpg");
-            textureColumna = loadTexture(imagenTextura[0]);
-            textureGrua = loadTexture(imagenTextura[1]);
-            textureLosa = loadTexture(imagenTextura[2]);
-            textureMadera = loadTexture(imagenTextura[3]);
-            texturePasto = loadTexture(imagenTextura[4]);
-            //console.log('termino de cargar las texturas');
-            webGLStart2();
-
-            }
-
-        function loadTexture(path) {
-
-            var texture = gl.createTexture();
-            var image = new Image();
-
-            image.onload = function() {
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-                gl.generateMipmap(gl.TEXTURE_2D);
-                //gl.bindTexture(gl.TEXTURE_2D, null);
-                                /*
-                if (cantTextures > 1)
-                    {   console.log('faltan cargar ' + cantTextures);
-                        cantTextures --;}
-                else
-                    {   
-                        console.log('termino de cargar las texturas');
-                        webGLStart2();
-                    }
-                */
-            }
-            image.src = path;
-            texture.image = image;
-            return texture;
-            }
-
-            function isPowerOf2(value) {
-                return (value & (value - 1)) == 0;
-                }
-
-            function drawScene() {
+        
+        function drawScene() {
 
             // Se configura el viewport dentro del "canvas".
             // En este caso se utiliza toda el área disponible
@@ -323,18 +179,11 @@
             mat4.perspective(matrizProyeccion, 30, aspect, 0.1, 100.0);
             mat4.scale(matrizProyeccion,matrizProyeccion,[1,-1,1]); // parche para hacer un flip de Y, parece haber un bug en glmatrix
 
-            // Se inicializan las variables asociadas con la Iluminación
-            gl.uniform1f(shaderProgram.frameUniform, time/10.0 );
-            gl.uniform3f(shaderProgram.ambientColorUniform, 0.6, 0.6, 0.6 );
-            gl.uniform3f(shaderProgram.directionalColorUniform, 1., 0., 0.);
-            gl.uniform1i(shaderProgram.useLightingUniform,(lighting=="true"));
 
-            gl.useProgram(colorShader);            
-            gl.uniform1f(colorShader.frameUniform, time/10.0 );
-            gl.uniform3f(colorShader.ambientColorUniform, 0.6, 0.6, 0.6 );
-            gl.uniform3f(colorShader.directionalColorUniform, 1., 0., 0.);
-            gl.uniform1i(colorShader.useLightingUniform,(lighting=="true"));
-            
+            var lightPosition = [10.0,0.0, 3.0];
+            shaderProgram = cargarUniform(gl, shaderProgram, lightPosition);
+            colorShader = cargarUniform(gl, colorShader, lightPosition);
+
             if (current_cam ==1 )
                 {
                 viewMatrix = drone.getViewMatrix();
@@ -344,10 +193,6 @@
                 viewMatrix = orbital.getViewMatrix();
                 orbital.setEventListeners(gl.canvas);
                 orbital.update();}
-
-            var lightPosition = [10.0,0.0, 3.0];
-            gl.uniform3fv(shaderProgram.lightingDirectionUniform, lightPosition);
-            gl.uniform3fv(colorShader.lightingDirectionUniform, lightPosition);
 
             dibujarGeometria();
 
@@ -365,15 +210,16 @@
             for (i=0; i<20; i++){
                 for (m=0;m<30;m++){
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
-                    pasto.draw(null);}
+                    pasto.draw(null, texturePasto, textureMadera, textureGrua);}
                 }           
 
-            grua_A1.draw(null);          
+            grua_A1.draw(null, texturePasto, textureMadera, textureGrua);          
+            /*        
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
-                piso1.draw(null, textureColumna);}
-            /*             
-            for (i=0; i<Math.trunc(pisosTramo2); i++){
+                piso1.draw(null, texturePasto, textureMadera, textureGrua);}
+
+                for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
                 piso2.draw(null, textureMadera);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
@@ -474,16 +320,20 @@
 
         function webGLStart1() {
             var canvas = document.getElementById("myCanvas");
+            document.title='TP Sistemas Graficos';
             initGL(canvas);
             }
         
         function webGLStart2() {
-            initShaders("vertex","fragment");
 
-            crearGeometriaGrua(textureGrua, textureMadera);
-            crearGeometriaEdificio(textureLosa);
+            shaderProgram = initShaders(gl, vertexShaderSource, fragmentShaderSource);
+            colorShader =  initShaders(gl,colorVertexShaderSource, colorFragmentShaderSource);
+            colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
+
+            //crearGeometriaEdificio(textureLosa);
             //crearGeometriaTobogan();
-            crearGeometriaPasto(texturePasto);
+            crearGeometriaPasto(texturePasto, shaderProgram);
+            crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShader);
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);

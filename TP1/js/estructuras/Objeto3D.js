@@ -450,7 +450,7 @@ class Objeto3D {
             }
 
 
-        this.draw = function(matPadre){
+        this.draw = function(matPadre, texturePasto, textureMadera, textureGrua){
                 this.actualizarMatrizModelado();
                 // concatenamos las transformaciones padre/hijo
                 if(matPadre){
@@ -458,38 +458,32 @@ class Objeto3D {
                     }
 
                 if (this.webgl_position_buffer && this.webgl_index_buffer){
-                // dibujamos la malla de triángulos con WebGL
-                // si el objeto tiene geometría asociada
                     this.setMatrixUniforms();
 
                     // Se configuran los buffers que alimentaron el pipeline
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_position_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.webgl_position_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    //gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);   
     
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_texture_coord_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.textureCoordAttribute, this.webgl_texture_coord_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    //gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
-                    //gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-      
-                    // Tell WebGL we want to affect texture unit 0
-                    if (this.nroTextura==4) //pasto
-                        gl.activeTexture(gl.TEXTURE0);
-                    if (this.nroTextura==1) //grua
-                        gl.activeTexture(gl.TEXTURE1);
-                    if (this.nroTextura==2) //madera
-                        gl.activeTexture(gl.TEXTURE2);
-
-                        // Bind the texture to texture unit 0
+/*
+           
                     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                    // Tell the shader we bound the texture to texture unit 0
-                    //gl.uniform1i(this.shaderProgram.samplerUniform, 0);
-                    //console.log('paso por el usampler');
-                    //gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
+  */     
 
+                    gl.activeTexture(gl.TEXTURE0);
+                    if (this.nroTextura==4) //pasto
+                        gl.bindTexture(gl.TEXTURE_2D, texturePasto);
+                    if (this.nroTextura==1) //grua
+                        gl.bindTexture(gl.TEXTURE_2D, textureGrua);
+                    if (this.nroTextura==2) //madera
+                        gl.bindTexture(gl.TEXTURE_2D, textureMadera);
+
+                    gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
+             
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
                     
                     if (modo!="wireframe"){
@@ -506,7 +500,7 @@ class Objeto3D {
 
                 for (var i=0;i<this.hijos.length;i++){
                     //le mando la matriz de modelado del padre
-                    this.hijos[i].draw(this.matrizModelado);}
+                    this.hijos[i].draw(this.matrizModelado, texturePasto, textureMadera, textureGrua);}
         }
 
     }

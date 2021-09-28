@@ -1,4 +1,4 @@
-function crearGeometriaPasto(texturePasto){
+function crearGeometriaPasto(texturePasto, shaderProgram){
     pasto = new Objeto3D(1,1);
     pasto.initBuffers(2, 2,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
@@ -523,7 +523,7 @@ function crearGeometriaEdificio(textureLosa){
 }
 
 
-function crearGeometriaGrua(textureGrua, textureMadera){
+function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShader){
     // GRUA
     // pieza A
     //ancho, largo
@@ -531,24 +531,28 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_A1.initBuffers(3, 2,'cuadrado');
     grua_A1.setTextura(textureGrua);
     grua_A1.setShader(shaderProgram);
+    grua_A1.setTipoShader("textura");
     grua_A1.setNroTextura(1);
 
     grua_A2 = new Objeto3D(1,1);
     grua_A2.initBuffers(3, 2,'cuadrado');
     grua_A2.setTextura(textureGrua);
     grua_A2.setShader(shaderProgram);
+    grua_A2.setTipoShader("textura");
     grua_A2.setNroTextura(1);
 
     grua_A3 = new Objeto3D(1,1);
     grua_A3.initBuffers(3, 2,'cuadrado');
     grua_A3.setTextura(textureGrua);
     grua_A3.setShader(shaderProgram);
+    grua_A3.setTipoShader("textura");
     grua_A3.setNroTextura(1);
 
     grua_A4 = new Objeto3D(1,1);
     grua_A4.initBuffers(3, 2,'cuadrado');
     grua_A4.setTextura(textureGrua);
     grua_A4.setShader(shaderProgram);
+    grua_A4.setTipoShader("textura");
     grua_A4.setNroTextura(1);
 
     grua_A1.agregarHijo(grua_A2);
@@ -564,24 +568,28 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_B1.initBuffers(4, 2,'cuadrado');
     grua_B1.setTextura(textureGrua);
     grua_B1.setShader(shaderProgram);
+    grua_B1.setTipoShader("textura");
     grua_B1.setNroTextura(1);
 
     grua_B2 = new Objeto3D(1,1);
     grua_B2.initBuffers(4, 2,'cuadrado');
     grua_B2.setTextura(textureGrua);
     grua_B2.setShader(shaderProgram);
+    grua_B2.setTipoShader("textura");
     grua_B2.setNroTextura(1);
 
     grua_B3 = new Objeto3D(1,1);
     grua_B3.initBuffers(4, 2,'cuadrado');
     grua_B3.setTextura(textureGrua);
     grua_B3.setShader(shaderProgram);
+    grua_B3.setTipoShader("textura");
     grua_B3.setNroTextura(1);
 
     grua_B4 = new Objeto3D(1,1);
     grua_B4.initBuffers(4, 2,'cuadrado');
     grua_B4.setTextura(textureGrua);
     grua_B4.setShader(shaderProgram);
+    grua_B4.setTipoShader("textura");
     grua_B4.setNroTextura(1);
 
     grua_B1.agregarHijo(grua_B2);
@@ -618,25 +626,29 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_D1.setTextura(textureGrua);
     grua_D1.setShader(shaderProgram);
     grua_D1.setNroTextura(1);
+    grua_D1.setTipoShader("textura");
 
     grua_D2 = new Objeto3D(2,2);
     grua_D2.initBuffers(3, 3,'cabina');
     grua_D2.setTextura(textureGrua);
     grua_D2.setShader(shaderProgram);
     grua_D2.setNroTextura(1);
+    grua_D2.setTipoShader("textura");
 
     grua_D3 = new Objeto3D(2,2);
     grua_D3.initBuffers(3, 2,'cuadrado');
     grua_D3.setTextura(textureGrua);
     grua_D3.setShader(shaderProgram);
     grua_D3.setNroTextura(1);
+    grua_D3.setTipoShader("textura");
 
     grua_D4 = new Objeto3D(2,2);
     grua_D4.initBuffers(3, 2,'cuadrado');
     grua_D4.setTextura(textureGrua);
     grua_D4.setShader(shaderProgram);
     grua_D4.setNroTextura(1);
-   
+    grua_D4.setTipoShader("textura");
+
     grua_C1.agregarHijo(grua_D1);
     grua_C1.agregarHijo(grua_D2);
     grua_C1.agregarHijo(grua_D3);
@@ -684,8 +696,7 @@ function crearGeometriaGrua(textureGrua, textureMadera){
 
     grua_F0.setTextura(textureMadera);
     grua_F0.setShader(shaderProgram);
-    grua_F0.setColor(color);
-    grua_F0.setTipoShader("color");
+    grua_F0.setTipoShader("textura");
     grua_F0.setNroTextura(2);
    
     //pieza F - cables
@@ -737,6 +748,7 @@ function crearGeometriaGrua(textureGrua, textureMadera){
     grua_G1.setTextura (textureMadera);
     grua_G1.setShader(shaderProgram);
     grua_G1.setNroTextura(2);
+    grua_G1.setTipoShader("textura");
 
     grua_F0.agregarHijo(grua_G1);
 

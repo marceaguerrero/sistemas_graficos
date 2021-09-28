@@ -1,3 +1,7 @@
+function isPowerOf2(value) {
+    return (value & (value - 1)) == 0;
+    }
+
 function calculoAlturaCable(altura)
 {
 if(altura == 0.3)
