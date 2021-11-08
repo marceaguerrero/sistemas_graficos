@@ -206,10 +206,13 @@ class Objeto3D {
 
                         var u=j/columnas;
                         var v=i/filas;
-                        var nrm=this.getNormal(u,v);
-                        normalBuffer.push(nrm[0]);
-                        normalBuffer.push(nrm[1]);
-                        normalBuffer.push(nrm[2]);
+                        normalBuffer.push(this.normal[0]);
+                        normalBuffer.push(this.normal[1]);
+                        normalBuffer.push(this.normal[2]);
+                        //    var nrm=this.getNormal(u,v);
+                        //    normalBuffer.push(nrm[0]);
+                        //    normalBuffer.push(nrm[1]);
+                        //    normalBuffer.push(nrm[2]);}
                         var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
                         uvBuffer.push(uvs[0]);
                         uvBuffer.push(0.2);

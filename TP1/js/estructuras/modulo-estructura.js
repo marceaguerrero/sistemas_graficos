@@ -825,7 +825,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
 
     // pieza D es la cabina
     grua_D1 = new Objeto3D(2,2);
-    grua_D1.setNormal(0.,0.,-1.);
+    grua_D1.setNormal(0.,0.,1.);
     grua_D1.initBuffers(3, 3,'cabina');
     grua_D1.setTextura(textureGrua);
     grua_D1.setShader(shaderProgram);
