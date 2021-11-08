@@ -22,6 +22,7 @@ class Objeto3D {
         this.posicion=vec3.create();
         this.rotacion=vec3.create();
         //this.rotacion=[0.,0.,0.];
+        this.normal=vec3.create();
 
         this.escala=vec3.create();
         this.hijos=[];
@@ -38,6 +39,10 @@ class Objeto3D {
         this.color = vec3.create();
         this.color = new Float32Array([0.500,0.50,0.50, 1.0]);
         this.nroTextura = 0;
+
+        this.setNormal=function(x,y,z) 
+            { 
+            this.normal = [x,y,z];}
 
         this.setNroTextura=function(valor) 
             { 
@@ -126,10 +131,13 @@ class Objeto3D {
 
                         var u=j/columnas;
                         var v=i/filas;
-                        var nrm=this.getNormal(u,v);
-                        normalBuffer.push(nrm[0]);
-                        normalBuffer.push(nrm[1]);
-                        normalBuffer.push(nrm[2]);
+                        normalBuffer.push(this.normal[0]);
+                        normalBuffer.push(this.normal[1]);
+                        normalBuffer.push(this.normal[2]);
+                        //    var nrm=this.getNormal(u,v);
+                        //    normalBuffer.push(nrm[0]);
+                        //    normalBuffer.push(nrm[1]);
+                        //    normalBuffer.push(nrm[2]);}
                         var uvs=this.getCoordenadasTextura(i,j, filas, columnas);
                         uvBuffer.push(uvs[0]);
                         uvBuffer.push(uvs[1]);

@@ -181,7 +181,7 @@
             mat4.scale(matrizProyeccion,matrizProyeccion,[1,-1,1]); // parche para hacer un flip de Y, parece haber un bug en glmatrix
 
 
-            var lightPosition = [10.0,5.0, 10.0];
+            var lightPosition = [10.0,10.0, 10.0];
             shaderProgram = cargarUniform(gl, shaderProgram, lightPosition);
             colorShader = cargarUniform(gl, colorShader, lightPosition);
 
@@ -210,15 +210,17 @@
             3 textureMadera;
             4 texturePasto ;
             */
-           
+           /*
             for (i=0; i<20; i++){
                 for (m=0;m<30;m++){
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
                     pasto.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);}
                 }           
+            */
 
             grua_A1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);
 
+            /*
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
                 piso1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna);}
@@ -227,6 +229,7 @@
                 piso2.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
             tapa_edif.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna);
+            */
 
             //tobogan.draw();
             /*
@@ -335,9 +338,9 @@
             colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
 
             //crearGeometriaTobogan();
-            crearGeometriaPasto(texturePasto, shaderProgram);
+            //crearGeometriaPasto(texturePasto, shaderProgram);
             crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShader);
-            crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,colorShader);
+            //crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,colorShader);
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);

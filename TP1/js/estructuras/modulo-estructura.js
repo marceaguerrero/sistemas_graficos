@@ -722,6 +722,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     // pieza A
     //ancho, largo
     grua_A1 = new Objeto3D(1,1);
+    grua_A1.setNormal(0.,0.,-1.);
     grua_A1.initBuffers(3, 2,'cuadrado');
     grua_A1.setTextura(textureGrua);
     grua_A1.setShader(shaderProgram);
@@ -729,6 +730,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_A1.setNroTextura(1);
 
     grua_A2 = new Objeto3D(1,1);
+    grua_A2.setNormal(1.,0.,0.);
     grua_A2.initBuffers(3, 2,'cuadrado');
     grua_A2.setTextura(textureGrua);
     grua_A2.setShader(shaderProgram);
@@ -736,6 +738,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_A2.setNroTextura(1);
 
     grua_A3 = new Objeto3D(1,1);
+    grua_A3.setNormal(0.,0.,1.);
     grua_A3.initBuffers(3, 2,'cuadrado');
     grua_A3.setTextura(textureGrua);
     grua_A3.setShader(shaderProgram);
@@ -743,6 +746,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_A3.setNroTextura(1);
 
     grua_A4 = new Objeto3D(1,1);
+    grua_A4.setNormal(1.,0.,0.);
     grua_A4.initBuffers(3, 2,'cuadrado');
     grua_A4.setTextura(textureGrua);
     grua_A4.setShader(shaderProgram);
@@ -759,6 +763,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
 
     // pieza B
     grua_B1 = new Objeto3D(1,1);
+    grua_B1.setNormal(0.,0.,1.);
     grua_B1.initBuffers(4, 2,'cuadrado');
     grua_B1.setTextura(textureGrua);
     grua_B1.setShader(shaderProgram);
@@ -766,6 +771,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_B1.setNroTextura(1);
 
     grua_B2 = new Objeto3D(1,1);
+    grua_B2.setNormal(-1.,0.,0.);
     grua_B2.initBuffers(4, 2,'cuadrado');
     grua_B2.setTextura(textureGrua);
     grua_B2.setShader(shaderProgram);
@@ -773,6 +779,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_B2.setNroTextura(1);
 
     grua_B3 = new Objeto3D(1,1);
+    grua_B3.setNormal(0.,0.,-1.);
     grua_B3.initBuffers(4, 2,'cuadrado');
     grua_B3.setTextura(textureGrua);
     grua_B3.setShader(shaderProgram);
@@ -780,6 +787,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_B3.setNroTextura(1);
 
     grua_B4 = new Objeto3D(1,1);
+    grua_B4.setNormal(-1.,0.,0.);
     grua_B4.initBuffers(4, 2,'cuadrado');
     grua_B4.setTextura(textureGrua);
     grua_B4.setShader(shaderProgram);
@@ -795,6 +803,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_B2.setRotacion(0.,0., Math.PI/2.0);
     grua_B3.setPosicion(0.,0.,1.);
     grua_B4.setRotacion(0.,0.,-Math.PI/2.0);
+
     //se aplica a todos porque es el padre
     grua_B1.setPosicion(0.75,3.,-0.25);
     grua_B1.setEscala(-0.5,-0.5,-0.5);
@@ -814,9 +823,9 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_C1.setShader(colorShader);
     grua_C1.setTipoShader("color");
 
-
     // pieza D es la cabina
     grua_D1 = new Objeto3D(2,2);
+    grua_D1.setNormal(0.,0.,-1.);
     grua_D1.initBuffers(3, 3,'cabina');
     grua_D1.setTextura(textureGrua);
     grua_D1.setShader(shaderProgram);
@@ -824,6 +833,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_D1.setTipoShader("textura");
 
     grua_D2 = new Objeto3D(2,2);
+    grua_D2.setNormal(-1.,0.,0.);
     grua_D2.initBuffers(3, 3,'cabina');
     grua_D2.setTextura(textureGrua);
     grua_D2.setShader(shaderProgram);
@@ -831,6 +841,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_D2.setTipoShader("textura");
 
     grua_D3 = new Objeto3D(2,2);
+    grua_D3.setNormal(0.,0.,-1.);
     grua_D3.initBuffers(3, 2,'cuadrado');
     grua_D3.setTextura(textureGrua);
     grua_D3.setShader(shaderProgram);
@@ -838,6 +849,7 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_D3.setTipoShader("textura");
 
     grua_D4 = new Objeto3D(2,2);
+    grua_D4.setNormal(0.,0.,1.);
     grua_D4.initBuffers(3, 2,'cuadrado');
     grua_D4.setTextura(textureGrua);
     grua_D4.setShader(shaderProgram);
@@ -876,8 +888,6 @@ function crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShad
     grua_E1.setColor(color);
     grua_E1.setTipoShader("color");
     grua_E1.setNroTextura(1);
-
-
 
     //pieza F0 va a ser el contenedor para F y G, ya que como van con distintas escalas necesito que no se molesten
     //voy a hacerla tipo cilindro así se parece a la imagen original
