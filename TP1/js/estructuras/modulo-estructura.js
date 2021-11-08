@@ -1,5 +1,6 @@
 function crearGeometriaPasto(texturePasto, shaderProgram){
     pasto = new Objeto3D(1,1);
+    pasto.setNormal(0.,1.,0.);
     pasto.initBuffers(2, 2,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);

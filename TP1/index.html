@@ -84,18 +84,22 @@
         var fragmentShaderSource;
         var colorVertexShaderSource;
         var colorFragmentShaderSource;
+        var pastoFragmentShaderSource;
+        var pastoVertexShaderSource;
         var textureColumna;
         var textureGrua;
         var textureLosa;
         var textureMadera;
         var texturePasto;
+        var textureTierra;
+        var textureRoca;
         var current_cam = 1; //1 es drone, 2 es orbital
         var drone = new DroneCameraControl([0,2,5]);
         var orbital = new OrbitalCameraControl();
         orbital.setEventListeners();
 
         var glTextures = {};
-        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg"];
+        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg", "textures/tierra.jpg", "textures/roca.jpg"];
         var TEXTURES = [];
         var texture;
 
@@ -114,13 +118,13 @@
         }
 
         function loadShaders(){
-            $.when(loadVS(), loadVS2(), loadFS(), loadFS2()).done(function(res1,res2, res3, res4){
+            $.when(loadVS1(), loadVS2(), loadVS3(), loadFS1(), loadFS2(), loadFS3()).done(function(res1,res2, res3, res4, res5, res6){
                 webGLStart1();
-                textureColumna, textureGrua, textureLosa, textureMadera, texturePasto = initTextures(gl,imagenTextura);
+                textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca = initTextures(gl,imagenTextura);
                 webGLStart2();
             });
 
-            function loadVS() {
+            function loadVS1() {
                 return  $.ajax({
                     url: "shaders/vertex-shader.glsl",
                     success: function(result){
@@ -138,7 +142,16 @@
                 });
             }
 
-            function loadFS() {
+            function loadVS3() {
+                return  $.ajax({
+                    url: "shaders/pasto-vertex-shader.glsl",
+                    success: function(result){
+                        pastoVertexShaderSource=result;
+                    }
+                });
+            }
+
+            function loadFS1() {
                 return  $.ajax({
                     url: "shaders/fragment-shader.glsl",
                     success: function(result){
@@ -152,6 +165,15 @@
                     url: "shaders/color-fragment-shader.glsl",
                     success: function(result){
                         colorFragmentShaderSource=result;
+                    }
+                });
+            }
+
+            function loadFS3() {
+                return  $.ajax({
+                    url: "shaders/pasto-fragment-shader.glsl",
+                    success: function(result){
+                        pastoFragmentShaderSource=result;
                     }
                 });
             }
@@ -210,26 +232,24 @@
             3 textureMadera;
             4 texturePasto ;
             */
-           /*
+           
             for (i=0; i<20; i++){
                 for (m=0;m<30;m++){
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
-                    pasto.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);}
+                    pasto.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna, textureTierra, textureRoca);}
                 }           
-            */
+           
 
-            grua_A1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);
+            grua_A1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna , textureTierra, textureRoca);
 
-            /*
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
-                piso1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna);}
+                piso1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);}
             for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
-                piso2.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna);}    
+                piso2.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
-            tapa_edif.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna);
-            */
+            tapa_edif.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);
 
             //tobogan.draw();
             /*
@@ -334,13 +354,19 @@
         function webGLStart2() {
 
             shaderProgram = initShaders(gl, vertexShaderSource, fragmentShaderSource);
+            shaderProgram.samplerUniform = gl.getUniformLocation(shader, "uSampler");
             colorShader =  initShaders(gl,colorVertexShaderSource, colorFragmentShaderSource);
             colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
+            colorShader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
+            pastoShader = initShaders(gl, pastoVertexShaderSource, pastoFragmentShaderSource);
+            pastoShader.samplerUniform = gl.getUniformLocation(shader, "uSampler0");
+            pastoShader.samplerUniform = gl.getUniformLocation(shader, "uSampler1");
+            pastoShader.samplerUniform = gl.getUniformLocation(shader, "uSampler2");
 
             //crearGeometriaTobogan();
-            //crearGeometriaPasto(texturePasto, shaderProgram);
+            crearGeometriaPasto(texturePasto, textureTierra, textureRoca, pastoShader);
             crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShader);
-            //crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,colorShader);
+            crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,colorShader);
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);

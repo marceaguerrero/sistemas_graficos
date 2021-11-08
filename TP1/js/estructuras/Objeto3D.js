@@ -458,7 +458,7 @@ class Objeto3D {
             }
 
 
-        this.draw = function(matPadre, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna){
+        this.draw = function(matPadre, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna,  textureTierra, textureRoca){
                 this.actualizarMatrizModelado();
                 // concatenamos las transformaciones padre/hijo
                 if(matPadre){
@@ -487,21 +487,36 @@ class Objeto3D {
                     var unit = parseInt(this.nroTextura);
                     if (this.nroTextura==0) //columna
                         {gl.activeTexture(gl.TEXTURE0);
-                        gl.bindTexture(gl.TEXTURE_2D, textureColumna);}
+                        gl.bindTexture(gl.TEXTURE_2D, textureColumna);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), unit);
+                    }
                     if (this.nroTextura==1) //grua
                         {gl.activeTexture(gl.TEXTURE1);
-                        gl.bindTexture(gl.TEXTURE_2D, textureGrua);}
+                        gl.bindTexture(gl.TEXTURE_2D, textureGrua);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), unit);
+                    }
                     if (this.nroTextura==2) //losa
                         {gl.activeTexture(gl.TEXTURE2);
-                        gl.bindTexture(gl.TEXTURE_2D, textureLosa);}
+                        gl.bindTexture(gl.TEXTURE_2D, textureLosa);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), unit);
+                    }
                     if (this.nroTextura==3) //madera
                         {gl.activeTexture(gl.TEXTURE3);
-                        gl.bindTexture(gl.TEXTURE_2D, textureMadera);}
+                        gl.bindTexture(gl.TEXTURE_2D, textureMadera);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), unit);
+                    }
                     if (this.nroTextura==4) //pasto
                         {gl.activeTexture(gl.TEXTURE4);
-                        gl.bindTexture(gl.TEXTURE_2D, texturePasto);}
+                        gl.bindTexture(gl.TEXTURE_2D, texturePasto);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler2'), unit);
+                        gl.activeTexture(gl.TEXTURE5);
+                        gl.bindTexture(gl.TEXTURE_2D, textureTierra);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler0'), unit);
+                        gl.activeTexture(gl.TEXTURE6);
+                        gl.bindTexture(gl.TEXTURE_2D, textureRoca);
+                        gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler1'), unit);
+                    }
 
-                    gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), unit);
              
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
                     

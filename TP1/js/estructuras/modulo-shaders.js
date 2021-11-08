@@ -4,8 +4,11 @@ function initTextures(gl,imagenTextura){
     textureLosa = loadTexture(gl, imagenTextura[2]);
     textureMadera = loadTexture(gl, imagenTextura[3]);
     texturePasto = loadTexture(gl, imagenTextura[4]);
+    textureTierra = loadTexture(gl, imagenTextura[5]);
+    textureRoca = loadTexture(gl, imagenTextura[6]);
+     
 
-    return textureColumna, textureGrua, textureLosa, textureMadera, texturePasto;
+    return textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca ;
 }
 
 function getShader(gl,code,type) {
@@ -68,7 +71,7 @@ function initShaders(gl, vs, fs) {
     shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
     shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");
     shader.nMatrixUniform = gl.getUniformLocation(shader, "uNMatrix");
-    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
+    //shader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
     shader.useLightingUniform = gl.getUniformLocation(shader, "uUseLighting");
     shader.ambientColorUniform = gl.getUniformLocation(shader, "uAmbientColor");
     shader.frameUniform = gl.getUniformLocation(shader, "time");
