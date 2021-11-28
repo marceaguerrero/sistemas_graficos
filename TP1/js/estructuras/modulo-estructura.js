@@ -1,11 +1,11 @@
-function crearGeometriaPasto(texturePasto, shaderProgram){
+function crearGeometriaPasto(texturePasto, textureTierra, textureRoca, pastoShader){
     pasto = new Objeto3D(1,1);
     pasto.setNormal(0.,1.,0.);
     pasto.initBuffers(2, 2,'cuadrado');
     pasto.setPosicion(-2.,0.,-14.);
     pasto.setRotacion(0.,Math.PI/2,0.);
     pasto.setTextura(texturePasto);    
-    pasto.setShader(shaderProgram);
+    pasto.setShader(pastoShader);
     pasto.setTipoShader("textura");
     pasto.setNroTextura(4);
 }

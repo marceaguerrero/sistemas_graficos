@@ -46,6 +46,7 @@
 
         var modo="edges"; // wireframe, smooth, edges
         var shaderProgram;
+        var pastoShader;
         var colorShader;
         var time=0;
 
@@ -99,7 +100,7 @@
         orbital.setEventListeners();
 
         var glTextures = {};
-        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg", "textures/tierra.jpg", "textures/roca.jpg"];
+        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg", "textures/tierra.png", "textures/roca.jpg"];
         var TEXTURES = [];
         var texture;
 
@@ -206,6 +207,7 @@
             var lightPosition = [10.0,10.0, 10.0];
             shaderProgram = cargarUniform(gl, shaderProgram, lightPosition);
             colorShader = cargarUniform(gl, colorShader, lightPosition);
+            pastoShader = cargarUniform(gl, pastoShader, lightPosition);
 
             if (current_cam ==1 )
                 {
@@ -354,14 +356,14 @@
         function webGLStart2() {
 
             shaderProgram = initShaders(gl, vertexShaderSource, fragmentShaderSource);
-            shaderProgram.samplerUniform = gl.getUniformLocation(shader, "uSampler");
+            //shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
             colorShader =  initShaders(gl,colorVertexShaderSource, colorFragmentShaderSource);
             colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
-            colorShader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
+            //colorShader.samplerUniform = gl.getUniformLocation(colorShader, "uSampler");
             pastoShader = initShaders(gl, pastoVertexShaderSource, pastoFragmentShaderSource);
-            pastoShader.samplerUniform = gl.getUniformLocation(shader, "uSampler0");
-            pastoShader.samplerUniform = gl.getUniformLocation(shader, "uSampler1");
-            pastoShader.samplerUniform = gl.getUniformLocation(shader, "uSampler2");
+            //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler0");
+            //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler1");
+            //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler2");
 
             //crearGeometriaTobogan();
             crearGeometriaPasto(texturePasto, textureTierra, textureRoca, pastoShader);

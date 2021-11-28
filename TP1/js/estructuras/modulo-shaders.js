@@ -40,6 +40,8 @@ function getShaderSource(url) {
 
 function initShaders(gl, vs, fs) {
 
+    var shader;
+
     //Shader de texturas
     var fragmentShader= getShader(gl, vs ,"vertex");
     var vertexShader= getShader(gl, fs ,"fragment");
@@ -71,7 +73,7 @@ function initShaders(gl, vs, fs) {
     shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
     shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");
     shader.nMatrixUniform = gl.getUniformLocation(shader, "uNMatrix");
-    //shader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
+    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
     shader.useLightingUniform = gl.getUniformLocation(shader, "uUseLighting");
     shader.ambientColorUniform = gl.getUniformLocation(shader, "uAmbientColor");
     shader.frameUniform = gl.getUniformLocation(shader, "time");
@@ -79,6 +81,9 @@ function initShaders(gl, vs, fs) {
     shader.directionalColorUniform = gl.getUniformLocation(shader, "uDirectionalColor");
     shader.luzAmbienteUniform = gl.getUniformLocation(shader, "luzAmbiente");
 
+    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler0");
+    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler1");
+    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler2");
 
     return shader
     }

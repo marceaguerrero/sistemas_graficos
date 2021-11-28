@@ -169,5 +169,6 @@
     
             color = (u_Ambient_color + u_Diffuse_color + u_Specular_color) * color;
             gl_FragColor = vec4(color,1.0);
+            //gl_FragColor = vec4(roca,1.0);
                    
                 }
