@@ -7,7 +7,6 @@ function initTextures(gl,imagenTextura){
     textureTierra = loadTexture(gl, imagenTextura[5]);
     textureRoca = loadTexture(gl, imagenTextura[6]);
      
-
     return textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca ;
 }
 
@@ -38,7 +37,7 @@ function getShaderSource(url) {
     return (req.status == 200) ? req.responseText : null;
 };
 
-function initShaders(gl, vs, fs) {
+function initShaders(gl, vs, fs, type) {
 
     var shader;
 
@@ -55,36 +54,50 @@ function initShaders(gl, vs, fs) {
         alert("Could not initialise shaders");
     }
 
- 
-    shader.vertexPositionAttribute = gl.getAttribLocation(shader, "aPosition");
-    shader.vertexNormalAttribute = gl.getAttribLocation(shader, "aNormal");
-    shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
+    if (type== 'sky'){
+          // look up where the vertex data needs to go.
+        shader.positionLocation = gl.getAttribLocation(shader, "a_position");
+        shader.skyboxLocation = gl.getAttribLocation(shader, "u_skybox");
+        shader.viewDirectionProjectionInverseLocation =
+        gl.getUniformLocation(shader, "u_viewDirectionProjectionInverse");
+        // Create a buffer for positions
+        var positionBuffer = gl.createBuffer();
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // Put the positions in the buffer
+        var positions = new Float32Array(
+            [
+              -1, -1,
+               1, -1,
+              -1,  1,
+              -1,  1,
+               1, -1,
+               1,  1,
+            ]);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);        
 
-/*
-    según lei esto se hace en el momento del render, ahí fue al Objeto3D
-
-    gl.useProgram(shader);
-
-    gl.enableVertexAttribArray(shader.vertexPositionAttribute);
-    gl.enableVertexAttribArray(shader.textureCoordAttribute);
-    gl.enableVertexAttribArray(shader.vertexNormalAttribute);
-*/
-    shader.pMatrixUniform = gl.getUniformLocation(shader, "uPMatrix");
-    shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
-    shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");
-    shader.nMatrixUniform = gl.getUniformLocation(shader, "uNMatrix");
-    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
-    shader.useLightingUniform = gl.getUniformLocation(shader, "uUseLighting");
-    shader.ambientColorUniform = gl.getUniformLocation(shader, "uAmbientColor");
-    shader.frameUniform = gl.getUniformLocation(shader, "time");
-    shader.lightingDirectionUniform = gl.getUniformLocation(shader, "uLightPosition");
-    shader.directionalColorUniform = gl.getUniformLocation(shader, "uDirectionalColor");
-    shader.luzAmbienteUniform = gl.getUniformLocation(shader, "luzAmbiente");
-
-    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler0");
-    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler1");
-    shader.samplerUniform = gl.getUniformLocation(shader, "uSampler2");
-
+        }
+    else {
+        shader.vertexPositionAttribute = gl.getAttribLocation(shader, "aPosition");
+        shader.vertexNormalAttribute = gl.getAttribLocation(shader, "aNormal");
+        shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
+        shader.pMatrixUniform = gl.getUniformLocation(shader, "uPMatrix");
+        shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
+        shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");
+        shader.nMatrixUniform = gl.getUniformLocation(shader, "uNMatrix");
+        shader.samplerUniform = gl.getUniformLocation(shader, "uSampler");
+        shader.useLightingUniform = gl.getUniformLocation(shader, "uUseLighting");
+        shader.ambientColorUniform = gl.getUniformLocation(shader, "uAmbientColor");
+        shader.frameUniform = gl.getUniformLocation(shader, "time");
+        shader.lightingDirectionUniform = gl.getUniformLocation(shader, "uLightPosition");
+        shader.directionalColorUniform = gl.getUniformLocation(shader, "uDirectionalColor");
+        shader.luzAmbienteUniform = gl.getUniformLocation(shader, "luzAmbiente");
+        shader.samplerUniform = gl.getUniformLocation(shader, "uSampler0");
+        shader.samplerUniform = gl.getUniformLocation(shader, "uSampler1");
+        shader.samplerUniform = gl.getUniformLocation(shader, "uSampler2");
+    }
+    
+    
     return shader
     }
 
@@ -123,3 +136,71 @@ function initShaders(gl, vs, fs) {
         texture.image = image;
         return texture;
         }
+
+
+    function initCubeTexture(gl){
+       
+        // Create a texture.
+        var texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
+        const faceInfos = [
+        {
+            target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, 
+            url: './textures/skybox/right.jpg',
+        },
+        {
+            target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 
+            url: './textures/skybox/left.jpg',
+        },
+        {
+            target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 
+            url: './textures/skybox/up.jpg',
+        },
+        {
+            target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 
+            url: './textures/skybox/down.jpg',
+        },
+        {
+            target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 
+            url: './textures/skybox/back.jpg',
+        },
+        {
+            target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 
+            url: './textures/skybox/front.jpg',
+        },
+        ];
+        faceInfos.forEach((faceInfo) => {
+        const {target, url} = faceInfo;
+        
+        // Upload the canvas to the cubemap face.
+        const level = 0;
+        const internalFormat = gl.RGBA;
+        const width = 512;
+        const height = 512;
+        const format = gl.RGBA;
+        const type = gl.UNSIGNED_BYTE;
+        
+        // setup each face so it's immediately renderable
+        gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
+        
+        // Asynchronously load an image
+        const image = new Image();
+        image.src = url;
+        image.addEventListener('load', function() {
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            gl.texImage2D(target, level, internalFormat, format, type, image);
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+        });
+        });
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+  
+
+    return texture;}
+
+    
+    

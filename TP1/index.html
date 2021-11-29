@@ -15,6 +15,7 @@
     <script src="js/estructuras/modulo-shaders.js"></script>
     <script src="js/estructuras/perlin-noise.js"></script>
     <script src="js/estructuras/Objeto3D.js"></script>
+    <script src="js/estructuras/cielo.js"></script>
 
 <style>
         html{
@@ -48,6 +49,8 @@
         var shaderProgram;
         var pastoShader;
         var colorShader;
+        var cieloShader;
+        var cielo;
         var time=0;
 
         var gl;
@@ -87,6 +90,8 @@
         var colorFragmentShaderSource;
         var pastoFragmentShaderSource;
         var pastoVertexShaderSource;
+        var cieloFragmentShaderSource;
+        var cieloVertexShaderSource;
         var textureColumna;
         var textureGrua;
         var textureLosa;
@@ -94,6 +99,7 @@
         var texturePasto;
         var textureTierra;
         var textureRoca;
+        var textureCubo;
         var current_cam = 1; //1 es drone, 2 es orbital
         var drone = new DroneCameraControl([0,2,5]);
         var orbital = new OrbitalCameraControl();
@@ -101,6 +107,8 @@
 
         var glTextures = {};
         var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg", "textures/tierra.png", "textures/roca.jpg"];
+        var imagenCubo = ["textures/skybox/up.png", "textures/skybox/down.png","textures/skybox/right.png","textures/skybox/left.png","textures/skybox/front.png","textures/skybox/back.png"];
+
         var TEXTURES = [];
         var texture;
 
@@ -119,9 +127,10 @@
         }
 
         function loadShaders(){
-            $.when(loadVS1(), loadVS2(), loadVS3(), loadFS1(), loadFS2(), loadFS3()).done(function(res1,res2, res3, res4, res5, res6){
+            $.when(loadVS1(), loadVS2(), loadVS3(), loadVS4(),loadFS1(), loadFS2(), loadFS3(), loadFS4()).done(function(res1,res2, res3, res4, res5, res6, res7, res8){
                 webGLStart1();
                 textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca = initTextures(gl,imagenTextura);
+                textureCubo =  initCubeTexture(gl);
                 webGLStart2();
             });
 
@@ -148,6 +157,15 @@
                     url: "shaders/pasto-vertex-shader.glsl",
                     success: function(result){
                         pastoVertexShaderSource=result;
+                    }
+                });
+            }
+
+            function loadVS4() {
+                return  $.ajax({
+                    url: "shaders/cielo-vertex-shader.glsl",
+                    success: function(result){
+                        cieloVertexShaderSource=result;
                     }
                 });
             }
@@ -179,6 +197,15 @@
                 });
             }
 
+            function loadFS4() {
+                return  $.ajax({
+                    url: "shaders/cielo-fragment-shader.glsl",
+                    success: function(result){
+                        cieloFragmentShaderSource=result;
+                    }
+                });
+            }
+
         }
 
         function onResize(){
@@ -203,12 +230,11 @@
             mat4.perspective(matrizProyeccion, 30, aspect, 0.1, 100.0);
             mat4.scale(matrizProyeccion,matrizProyeccion,[1,-1,1]); // parche para hacer un flip de Y, parece haber un bug en glmatrix
 
-
             var lightPosition = [10.0,10.0, 10.0];
             shaderProgram = cargarUniform(gl, shaderProgram, lightPosition);
             colorShader = cargarUniform(gl, colorShader, lightPosition);
             pastoShader = cargarUniform(gl, pastoShader, lightPosition);
-
+            //cieloShader = cargarUniform(gl, cieloShader, lightPosition);
             if (current_cam ==1 )
                 {
                 viewMatrix = drone.getViewMatrix(); 
@@ -222,11 +248,11 @@
             //var color = [0.30,0.30,1.0, 1.0];
             //gl.uniform3fv(colorShader.fColorLocation, color);
            
-            dibujarGeometria();
+            dibujarGeometria(matrizProyeccion, viewMatrix);
 
         }
 
-        function dibujarGeometria(){
+        function dibujarGeometria(matrizProyeccion, viewMatrix){
             /*
             0 textureColumna;
             1 textureGrua ;
@@ -253,6 +279,12 @@
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
             tapa_edif.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);
 
+
+            //AHORA ME OCUPO DEL CIELO
+            // ESTA PARTE DEBERIA ESTAR DONDE CREO LA GEOMETRIA
+            cielo = new Cielo(gl, cieloShader, matrizProyeccion, textureCubo);
+            cielo.draw(gl, viewMatrix, matrizProyeccion, aspect);
+            
             //tobogan.draw();
             /*
             for (i=0; i<3; i++){
@@ -355,15 +387,16 @@
         
         function webGLStart2() {
 
-            shaderProgram = initShaders(gl, vertexShaderSource, fragmentShaderSource);
+            shaderProgram = initShaders(gl, vertexShaderSource, fragmentShaderSource, null);
             //shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-            colorShader =  initShaders(gl,colorVertexShaderSource, colorFragmentShaderSource);
+            colorShader =  initShaders(gl,colorVertexShaderSource, colorFragmentShaderSource, null);
             colorShader.fColorLocation = gl.getUniformLocation(colorShader, "fColor");
             //colorShader.samplerUniform = gl.getUniformLocation(colorShader, "uSampler");
-            pastoShader = initShaders(gl, pastoVertexShaderSource, pastoFragmentShaderSource);
+            pastoShader = initShaders(gl, pastoVertexShaderSource, pastoFragmentShaderSource, null);
             //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler0");
             //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler1");
             //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler2");
+            cieloShader = initShaders(gl, cieloVertexShaderSource, cieloFragmentShaderSource, 'sky');
 
             //crearGeometriaTobogan();
             crearGeometriaPasto(texturePasto, textureTierra, textureRoca, pastoShader);

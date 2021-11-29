@@ -484,7 +484,7 @@ class Objeto3D {
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.webgl_normal_buffer);
                     gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute, this.webgl_normal_buffer.itemSize, gl.FLOAT, false, 0, 0);
 
-                    var unit = parseInt(this.nroTextura);
+                    //var unit = parseInt(this.nroTextura);
                     if (this.nroTextura==0) //columna
                         {
                         gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), 0);
@@ -510,8 +510,6 @@ class Objeto3D {
                     }
                     if (this.nroTextura==4) //pasto
                         {
-                        //gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler'), );
-
                         gl.uniform1i(gl.getUniformLocation(this.shaderProgram, 'uSampler0'), 4);
                         gl.activeTexture(gl.TEXTURE4);
                         gl.bindTexture(gl.TEXTURE_2D, textureTierra);
@@ -524,25 +522,25 @@ class Objeto3D {
                         gl.activeTexture(gl.TEXTURE6);
                         gl.bindTexture(gl.TEXTURE_2D, texturePasto);
                         }
+                       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
+                        
+                        if (modo!="wireframe"){
+                            gl.uniform1i(this.shaderProgram.useLightingUniform,(lighting=="true"));
+                            gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
+                        }
 
-             
-                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.webgl_index_buffer);
-                    
-                    if (modo!="wireframe"){
-                        gl.uniform1i(this.shaderProgram.useLightingUniform,(lighting=="true"));
-                        gl.drawElements(gl.TRIANGLE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
-                    }
-
-                    if (modo!="smooth") {
-                        gl.uniform1i(this.shaderProgram.useLightingUniform,false);
-                        gl.drawElements(gl.LINE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
-                    }
+                        if (modo!="smooth") {
+                            gl.uniform1i(this.shaderProgram.useLightingUniform,false);
+                            gl.drawElements(gl.LINE_STRIP, this.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
+                        }
                 }
 
-
                 for (var i=0;i<this.hijos.length;i++){
-                    //le mando la matriz de modelado del padre
-                    this.hijos[i].draw(this.matrizModelado, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);}
+                        //le mando la matriz de modelado del padre
+                        this.hijos[i].draw(this.matrizModelado, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna);}
+
+
+
         }
 
     }
