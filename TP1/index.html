@@ -282,8 +282,9 @@
 
             //AHORA ME OCUPO DEL CIELO
             // ESTA PARTE DEBERIA ESTAR DONDE CREO LA GEOMETRIA
-            cielo = new Cielo(gl, cieloShader, matrizProyeccion, textureCubo);
-            cielo.draw(gl, viewMatrix, matrizProyeccion, aspect);
+            //cielo = new Cielo(gl, cieloShader, matrizProyeccion, textureCubo);
+            //cielo.draw(viewMatrix);
+            dibujo_cielo(gl, cieloShader, matrizProyeccion, textureCubo, viewMatrix);
             
             //tobogan.draw();
             /*

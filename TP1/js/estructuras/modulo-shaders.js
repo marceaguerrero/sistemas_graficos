@@ -57,7 +57,7 @@ function initShaders(gl, vs, fs, type) {
     if (type== 'sky'){
           // look up where the vertex data needs to go.
         shader.positionLocation = gl.getAttribLocation(shader, "a_position");
-        shader.skyboxLocation = gl.getAttribLocation(shader, "u_skybox");
+        shader.skyboxLocation = gl.getUniformLocation(shader, "u_skybox");
         shader.viewDirectionProjectionInverseLocation =
         gl.getUniformLocation(shader, "u_viewDirectionProjectionInverse");
         // Create a buffer for positions
@@ -193,11 +193,11 @@ function initShaders(gl, vs, fs, type) {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
         });
         });
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
   
 
     return texture;}

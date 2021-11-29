@@ -1,61 +1,53 @@
-class Cielo {
-    constructor(gl, cieloShader, _projMatrix, texture) {
-        this.gl = gl;
-        this.shader = cieloShader; 
-        this.projMatrix = _projMatrix;
-        this.texture = texture;
+function dibujo_cielo (gl, shader, matrizProyeccion, texture, viewMatrix) {
+
         mat4=glMatrix.mat4;
     
         // Create a buffer for positions
-        this.positionBuffer = this.gl.createBuffer();
+        positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        this.gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         // Put the positions in the buffer
         var positions = new Float32Array([
         -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1,
         ]);
-        this.gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 
-        this.draw=function(_viewMatrix, projectionMatrix) {
-                this.gl.useProgram(this.shader);
+        gl.useProgram(shader);
                 // Turn on the position attribute
-                this.gl.enableVertexAttribArray(this.positionLocation);
-                // Bind the position buffer.
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+        gl.enableVertexAttribArray(shader.positionLocation);
+                              // Bind the position buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-                // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-                var size = 2;          // 3 components per iteration
-                var type = gl.FLOAT;   // the data is 32bit floats
-                var normalize = false; // don't normalize the data
-                var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-                var offset = 0;        // start at the beginning of the buffer
-                this.gl.vertexAttribPointer(
-                    this.positionLocation, size, type, normalize, stride, offset);
+        // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 2;          // 3 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(
+                shader.positionLocation, size, type, normalize, stride, offset);
 
-                // We only care about direciton so remove the translation
-                let viewMatrix = mat4.clone(_viewMatrix);
+        // We only care about direciton so remove the translation
+        viewMatrix[12] = 0;
+        viewMatrix[13] = 0;
+        viewMatrix[14] = 0;
 
-                viewMatrix[12] = 0;
-                viewMatrix[13] = 0;
-                viewMatrix[14] = 0;
+        mat4.multiply(viewMatrix, matrizProyeccion , viewMatrix);
+        mat4.invert(viewMatrix, viewMatrix);
 
-                mat4.multiply(viewMatrix, projectionMatrix , viewMatrix);
-                mat4.invert(viewMatrix, viewMatrix);
+        // Set the uniforms
+        gl.uniformMatrix4fv(
+            shader.viewDirectionProjectionInverseLocation, false,
+            viewMatrix);
 
-                // Set the uniforms
-                this.gl.uniformMatrix4fv(
-                    this.viewDirectionProjectionInverseLocation, false,
-                    viewMatrix);
+        // Tell the shader to use texture unit 0 for u_skybox
+        gl.uniform1i(shader.skyboxLocation, 0);
 
-                // Tell the shader to use texture unit 0 for u_skybox
-                this.gl.uniform1i(this.skyboxLocation, 0);
+        // let our quad pass the depth test at 1.0
+        gl.depthFunc(gl.LEQUAL);
 
-                // let our quad pass the depth test at 1.0
-                this.gl.depthFunc(this.gl.LEQUAL);
-
-                // Draw the geometry.
-                this.gl.drawArrays(this.gl.TRIANGLES, 0, 1 * 6);
+        // Draw the geometry.
+        gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
 
 
         }
-    }}
