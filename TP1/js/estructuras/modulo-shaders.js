@@ -6,8 +6,9 @@ function initTextures(gl,imagenTextura){
     texturePasto = loadTexture(gl, imagenTextura[4]);
     textureTierra = loadTexture(gl, imagenTextura[5]);
     textureRoca = loadTexture(gl, imagenTextura[6]);
-     
-    return textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca ;
+    textureVentana = loadTexture(gl, imagenTextura[7]);
+
+    return textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca, textureVentana;
 }
 
 function getShader(gl,code,type) {
@@ -81,6 +82,8 @@ function initShaders(gl, vs, fs, type) {
         shader.vertexPositionAttribute = gl.getAttribLocation(shader, "aPosition");
         shader.vertexNormalAttribute = gl.getAttribLocation(shader, "aNormal");
         shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
+        //Lo agrego por el mapa de reflexion de las ventanas del edificio
+        shader.worldCameraPositionLocation = gl.getUniformLocation(shader, "u_worldCameraPosition");
         shader.pMatrixUniform = gl.getUniformLocation(shader, "uPMatrix");
         shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
         shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");

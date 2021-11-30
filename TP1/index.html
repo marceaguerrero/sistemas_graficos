@@ -50,6 +50,7 @@
         var pastoShader;
         var colorShader;
         var cieloShader;
+        var ventanaShader;
         var cielo;
         var time=0;
 
@@ -82,6 +83,8 @@
         var luzAmbiente = 0.7;
 
         var cantTextures = 1;
+        let initialPos=[0,0,0];
+        let cameraPosition=vec3.fromValues(initialPos[0],initialPos[1],initialPos[2]);
 
         var lighting="true";
         var vertexShaderSource;
@@ -92,6 +95,8 @@
         var pastoVertexShaderSource;
         var cieloFragmentShaderSource;
         var cieloVertexShaderSource;
+        var ventanaFragmentShaderSource;
+        var ventanaVertexShaderSource;
         var textureColumna;
         var textureGrua;
         var textureLosa;
@@ -100,13 +105,14 @@
         var textureTierra;
         var textureRoca;
         var textureCubo;
+        var textureVentana;
         var current_cam = 1; //1 es drone, 2 es orbital
         var drone = new DroneCameraControl([0,2,5]);
         var orbital = new OrbitalCameraControl();
         orbital.setEventListeners();
 
         var glTextures = {};
-        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg", "textures/tierra.png", "textures/roca.jpg"];
+        var imagenTextura = ["textures/columnas.jpg", "textures/grua.jpg", "textures/losa.jpg", "textures/madera.jpg", "textures/pasto.jpg", "textures/tierra.png", "textures/roca.jpg", "textures/ventana.PNG"];
         var imagenCubo = ["textures/skybox/up.png", "textures/skybox/down.png","textures/skybox/right.png","textures/skybox/left.png","textures/skybox/front.png","textures/skybox/back.png"];
 
         var TEXTURES = [];
@@ -127,9 +133,9 @@
         }
 
         function loadShaders(){
-            $.when(loadVS1(), loadVS2(), loadVS3(), loadVS4(),loadFS1(), loadFS2(), loadFS3(), loadFS4()).done(function(res1,res2, res3, res4, res5, res6, res7, res8){
+            $.when(loadVS1(), loadVS2(), loadVS3(), loadVS4(),loadVS5(), loadFS1(), loadFS2(), loadFS3(), loadFS4(), loadFS5()).done(function(res1,res2, res3, res4, res5, res6, res7, res8, res9, res10){
                 webGLStart1();
-                textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca = initTextures(gl,imagenTextura);
+                textureColumna, textureGrua, textureLosa, textureMadera, texturePasto, textureTierra, textureRoca, textureVentana = initTextures(gl,imagenTextura);
                 textureCubo =  initCubeTexture(gl);
                 webGLStart2();
             });
@@ -170,6 +176,16 @@
                 });
             }
 
+            function loadVS5() {
+                return  $.ajax({
+                    url: "shaders/ventana-vertex-shader.glsl",
+                    success: function(result){
+                        ventanaVertexShaderSource=result;
+                    }
+                });
+            }
+            
+
             function loadFS1() {
                 return  $.ajax({
                     url: "shaders/fragment-shader.glsl",
@@ -206,6 +222,15 @@
                 });
             }
 
+            function loadFS5() {
+                return  $.ajax({
+                    url: "shaders/ventana-fragment-shader.glsl",
+                    success: function(result){
+                        ventanaFragmentShaderSource=result;
+                    }
+                });
+            }
+
         }
 
         function onResize(){
@@ -235,10 +260,21 @@
             colorShader = cargarUniform(gl, colorShader, lightPosition);
             pastoShader = cargarUniform(gl, pastoShader, lightPosition);
             //cieloShader = cargarUniform(gl, cieloShader, lightPosition);
+            ventanaShader = cargarUniform(gl, ventanaShader, lightPosition);
+            
             if (current_cam ==1 )
                 {
                 viewMatrix = drone.getViewMatrix(); 
-                drone.update();}
+                cameraPosition = drone.update();
+                //lo actualizo por el mapa de reflexion
+                gl.uniform3fv(shaderProgram.worldCameraPositionLocation, cameraPosition);
+                gl.uniform3fv(colorShader.worldCameraPositionLocation, cameraPosition);
+                gl.uniform3fv(pastoShader.worldCameraPositionLocation, cameraPosition);
+                gl.uniform3fv(ventanaShader.worldCameraPositionLocation, cameraPosition);
+                //console.log(cameraPosition);
+                //console.log(ventanaShader.worldCameraPositionLocation);
+
+                }
             else
                 {
                 viewMatrix = orbital.getViewMatrix();
@@ -264,26 +300,22 @@
             for (i=0; i<20; i++){
                 for (m=0;m<30;m++){
                     pasto.setPosicion(-10.+i,0.,-9.+ m);
-                    pasto.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna, textureTierra, textureRoca);}
-                }           
+                    pasto.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna, textureTierra, textureRoca, textureVentana);}
+                  }           
            
 
-            grua_A1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna , textureTierra, textureRoca);
+            grua_A1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa, textureColumna, textureTierra, textureRoca, textureVentana);
 
             for (i=0; i<Math.trunc(pisosTramo1); i++){
                 piso1.setPosicion(0.,i*1.,0.);
-                piso1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);}
+                piso1.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca, textureVentana);}
             for (i=0; i<Math.trunc(pisosTramo2); i++){
                 piso2.setPosicion(0.,(i*1.) + pisosTramo1,0.);
-                piso2.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);}    
+                piso2.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca, textureVentana);}    
             tapa_edif.setPosicion(-5.5,pisosTramo1+pisosTramo2,9.);
-            tapa_edif.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca);
+            tapa_edif.draw(null, texturePasto, textureMadera, textureGrua, textureLosa,textureColumna,  textureTierra, textureRoca, textureVentana);
 
-
-            //AHORA ME OCUPO DEL CIELO
-            // ESTA PARTE DEBERIA ESTAR DONDE CREO LA GEOMETRIA
-            //cielo = new Cielo(gl, cieloShader, matrizProyeccion, textureCubo);
-            //cielo.draw(viewMatrix);
+            //Lo armé en cielo.js porque es distinto a los objetos de Objeto3D
             dibujo_cielo(gl, cieloShader, matrizProyeccion, textureCubo, viewMatrix);
             
             //tobogan.draw();
@@ -342,7 +374,17 @@
                 // 1 para la Drone
                     current_cam = 1;
                     matrizVista = drone.getViewMatrix();
-                    drone.update();}
+                    cameraPosition = drone.update();
+                    //lo actualizo por el mapa de reflexion
+                    gl.uniform3fv(shaderProgram.worldCameraPositionLocation, cameraPosition);
+                    gl.uniform3fv(colorShader.worldCameraPositionLocation, cameraPosition);
+                    gl.uniform3fv(pastoShader.worldCameraPositionLocation, cameraPosition);
+                    gl.uniform3fv(ventanaShader.worldCameraPositionLocation, cameraPosition);
+                    //console.log(cameraPosition);
+                    //console.log(ventanaShader.worldCameraPositionLocation);
+
+
+                }
                 if (event.keyCode == 50) {
                 // 2 para la Orbital
                     current_cam = 2;
@@ -353,8 +395,17 @@
             })
             
             if (current_cam == 1) {
-                matrizVista = drone.getViewMatrix();
-                drone.update();}
+                matrizVista = drone.getViewMatrix();          
+                cameraPosition = drone.update();
+                //lo actualizo por el mapa de reflexion
+                gl.uniform3fv(shaderProgram.worldCameraPositionLocation, cameraPosition);
+                gl.uniform3fv(colorShader.worldCameraPositionLocation, cameraPosition);
+                gl.uniform3fv(pastoShader.worldCameraPositionLocation, cameraPosition);
+                gl.uniform3fv(ventanaShader.worldCameraPositionLocation, cameraPosition);
+                //console.log(cameraPosition);
+                //console.log(ventanaShader.worldCameraPositionLocation);
+
+                }
             else {
                 // 2 para la Orbital
                 matrizVista = orbital.getViewMatrix();
@@ -398,11 +449,12 @@
             //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler1");
             //pastoShader.samplerUniform = gl.getUniformLocation(pastoShader, "uSampler2");
             cieloShader = initShaders(gl, cieloVertexShaderSource, cieloFragmentShaderSource, 'sky');
+            ventanaShader = initShaders(gl, ventanaVertexShaderSource, ventanaFragmentShaderSource, null);
 
             //crearGeometriaTobogan();
             crearGeometriaPasto(texturePasto, textureTierra, textureRoca, pastoShader);
             crearGeometriaGrua(textureGrua, textureMadera, shaderProgram, colorShader);
-            crearGeometriaEdificio(textureLosa, textureColumna, shaderProgram,colorShader);
+            crearGeometriaEdificio(textureLosa, textureColumna, textureVentana, shaderProgram,colorShader,ventanaShader);
 
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);
