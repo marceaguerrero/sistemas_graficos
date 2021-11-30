@@ -61,7 +61,6 @@
         var vec4=glMatrix.vec4;
 
         var matrizProyeccion = mat4.create();
-        var matrizVista = mat4.create();
 
         var $canvas=$("#myCanvas");
         var aspect=$canvas.width()/$canvas.height();
@@ -271,7 +270,7 @@
                 gl.uniform3fv(colorShader.worldCameraPositionLocation, cameraPosition);
                 gl.uniform3fv(pastoShader.worldCameraPositionLocation, cameraPosition);
                 gl.uniform3fv(ventanaShader.worldCameraPositionLocation, cameraPosition);
-                //console.log(cameraPosition);
+                //console.log(cameraPosition, viewMatrix);
                 //console.log(ventanaShader.worldCameraPositionLocation);
 
                 }
@@ -373,8 +372,9 @@
                 if (event.keyCode == 49) {
                 // 1 para la Drone
                     current_cam = 1;
-                    matrizVista = drone.getViewMatrix();
+                    viewMatrix = drone.getViewMatrix();
                     cameraPosition = drone.update();
+                    //console.log(viewMatrix, cameraPosition);
                     //lo actualizo por el mapa de reflexion
                     gl.uniform3fv(shaderProgram.worldCameraPositionLocation, cameraPosition);
                     gl.uniform3fv(colorShader.worldCameraPositionLocation, cameraPosition);
@@ -388,27 +388,28 @@
                 if (event.keyCode == 50) {
                 // 2 para la Orbital
                     current_cam = 2;
-                    matrizVista = orbital.getViewMatrix();
+                    viewMatrix = orbital.getViewMatrix();
                     //poner cuando lo inicio
                     //orbital.setEventListeners(gl.canvas);
                     orbital.update();}
             })
             
             if (current_cam == 1) {
-                matrizVista = drone.getViewMatrix();          
+                viewMatrix = drone.getViewMatrix();          
                 cameraPosition = drone.update();
+
                 //lo actualizo por el mapa de reflexion
                 gl.uniform3fv(shaderProgram.worldCameraPositionLocation, cameraPosition);
                 gl.uniform3fv(colorShader.worldCameraPositionLocation, cameraPosition);
                 gl.uniform3fv(pastoShader.worldCameraPositionLocation, cameraPosition);
                 gl.uniform3fv(ventanaShader.worldCameraPositionLocation, cameraPosition);
-                //console.log(cameraPosition);
+                //console.log(cameraPosition, viewMatrix);
                 //console.log(ventanaShader.worldCameraPositionLocation);
 
                 }
             else {
                 // 2 para la Orbital
-                matrizVista = orbital.getViewMatrix();
+                viewMatrix = orbital.getViewMatrix();
                 //orbital.setEventListeners(gl.canvas);
                 orbital.update();}
 
@@ -424,8 +425,9 @@
             gui.add(window, "pisosTramo2",3.,10.).step(0.01);
             //no anda las funciones asi que no lo muestro
             //gui.add(window, "alturaCable",0.1,0.35).step(0.01);
-            gui.add(window, "anchoVidrio",3.,4.).step(0.01);
-            gui.add(window, "altoVidrio",3.,4.).step(0.01);
+            //anda pero la estructura no la acompania, no llegué a arreglarlo
+            //gui.add(window, "anchoVidrio",3.,4.).step(0.01);
+            //gui.add(window, "altoVidrio",3.,4.).step(0.01);
             gui.add(window, "luzAmbiente",0.,1.).step(0.01);
 
 

@@ -21,6 +21,7 @@ class Objeto3D {
         this.normalMatrix = mat3.create();
         this.posicion=vec3.create();
         this.rotacion=vec3.create();
+        this.posCamera = vec3.create();
         //this.rotacion=[0.,0.,0.];
         this.normal=vec3.create();
 
@@ -443,7 +444,18 @@ class Objeto3D {
 
         this.setMatrixUniforms=function() {
             gl.uniformMatrix4fv(this.shaderProgram.mMatrixUniform, false, this.matrizModelado);
-            gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, matrizVista);
+            //Las agregué por el mapa de reflexion
+            var invVT = mat3.create();
+            mat3.fromMat4(invVT, viewMatrix);
+            mat3.invert(invVT,invVT);
+            gl.uniformMatrix3fv(this.shaderProgram.uInvVT, false, invVT);
+
+            gl.uniformMatrix4fv(this.shaderProgram.vMatrixUniform, false, viewMatrix);
+
+            this.posCamera = vec3.create( viewMatrix * (0,0,0) );
+            //this.posCamera = vec3.create(viewMatrix[12],viewMatrix[13],viewMatrix[14]);
+            gl.uniform3fv(this.shaderProgram.cameraPos, this.posCamera);          
+
             gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, matrizProyeccion);
             if (this.tipoShader == "color")
             {

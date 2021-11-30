@@ -11,7 +11,7 @@
         uniform mat4 uVMatrix;     // matriz de vista
         uniform mat4 uPMatrix;     // matriz de proyección
         uniform mat3 uNMatrix;     // matriz de normales
-                        
+
         uniform float time;                 // tiempo en segundos
         
         uniform sampler2D uSampler;         // sampler de textura de la tierra
@@ -26,8 +26,11 @@
         varying vec3 vWorldPosition;
         varying vec3 vNormal;
         varying vec2 vUv;                           
-        
-        // constantes
+        varying vec3 n_eye;
+        varying vec3 R;
+        varying vec4 eyePos;
+        varying vec3 viewCoords;
+             // constantes
         
         const float PI=3.141592653;
 
@@ -49,7 +52,16 @@
 
             gl_Position = uPMatrix*uVMatrix*worldPos;
 
+            vec4 eyeCoords = uVMatrix * worldPos;
+            viewCoords = eyeCoords.xyz;
+
+
             vWorldPosition=worldPos.xyz;              
             vNormal=normalize(uNMatrix * aNormal);
             vUv=uv;	
+
+            //otro caso
+            // esto es vNormal
+            //vec3 Normal = mat3(transpose(inverse(model))) * aNormal;
+
         }

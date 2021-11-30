@@ -84,6 +84,9 @@ function initShaders(gl, vs, fs, type) {
         shader.textureCoordAttribute = gl.getAttribLocation(shader, "aUv");
         //Lo agrego por el mapa de reflexion de las ventanas del edificio
         shader.worldCameraPositionLocation = gl.getUniformLocation(shader, "u_worldCameraPosition");
+        shader.cameraPos = gl.getUniformLocation(shader, "uCameraPos");
+        shader.uInvVT = gl.getUniformLocation(shader, "invVT");
+        
         shader.pMatrixUniform = gl.getUniformLocation(shader, "uPMatrix");
         shader.mMatrixUniform = gl.getUniformLocation(shader, "uMMatrix");
         shader.vMatrixUniform = gl.getUniformLocation(shader, "uVMatrix");
@@ -201,7 +204,7 @@ function initShaders(gl, vs, fs, type) {
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  
+ 
 
     return texture;}
 

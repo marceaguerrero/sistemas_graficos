@@ -46,8 +46,10 @@ function dibujo_cielo (gl, shader, matrizProyeccion, texture, viewMatrix) {
         // let our quad pass the depth test at 1.0
         gl.depthFunc(gl.LEQUAL);
 
+        //gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
         // Draw the geometry.
-        gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
+        gl.drawArrays(gl.TRIANGLES, 0, 6 * 6);
 
 
         }
